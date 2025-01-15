@@ -1,0 +1,7 @@
+# ide
+.vscode
+
+# python
+*.pyc
+.python-version
+
