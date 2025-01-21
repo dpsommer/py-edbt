@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "edbt"
+authors = [
+  { name="Duncan Sommerville", email="duncan.sommerville@gmail.com" },
+]
+description = "An implementation of event-driven behaviour trees"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/dpsommer/py-edbt"
+Issues = "https://github.com/dpsommer/py-edbt/issues"
+
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/edbt/version.py"
+
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/edbt"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q -p no:warnings"
+testpaths = [
+    "tests"
+]
