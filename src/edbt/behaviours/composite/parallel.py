@@ -1,6 +1,6 @@
 from enum import Enum
 
-from edbt import Status
+from edbt import BehaviourTree, Status
 
 from .composite import Composite
 
@@ -12,11 +12,11 @@ class SuccessPolicy(Enum):
 
 class Parallel(Composite):
 
-    def __init__(self, policy: SuccessPolicy):
-        super().__init__()
+    def __init__(self, tree: BehaviourTree, policy: SuccessPolicy):
+        super().__init__(tree)
+        self._success_policy = policy
         self._successes = 0
         self._failures = 0
-        self._success_policy = policy
 
     def initialize(self):
         self._successes = 0
