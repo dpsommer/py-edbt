@@ -12,7 +12,7 @@ from .decorator import Decorator
 AbortRule = Callable[[Behaviour], None]
 
 
-class BehaviourObserver(Decorator):
+class BOD(Decorator):
     _key: str
     _condition: BlackboardCondition
     _abort_rule: AbortRule
