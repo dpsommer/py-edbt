@@ -9,7 +9,7 @@ class Blackboard:
 
     def __init__(self):
         self.values = dict()
-        self.observers = defaultdict(default_factory=set())
+        self.observers = defaultdict(set)
 
 
 class BehaviourTree:
@@ -36,7 +36,7 @@ class BehaviourTree:
 
         return True
 
-    def start(self, behaviour: Behaviour, observer: StatusObserver):
+    def start(self, behaviour: Behaviour, observer: StatusObserver=None):
         if behaviour.observer is None:
             behaviour.observer = observer
         self._scheduler.appendleft(behaviour)
@@ -50,14 +50,16 @@ class BehaviourTree:
             behaviour.observer(status)
 
     def abort(self, behaviour: Behaviour):
-        behaviour.abort()
+        behaviour._abort()
         self._scheduler.remove(behaviour)
 
     def update_blackboard(self, k: str, v):
         self.blackboard.values[k] = v
         # trigger any observer callbacks
         if k in self.blackboard.observers:
-            for o in self.blackboard.observers[k]:
+            # make a copy of the observer set here with list
+            # as the callback may modify the set
+            for o in list(self.blackboard.observers[k]):
                 if o is not None:
                     o(v)
 
