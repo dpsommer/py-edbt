@@ -7,13 +7,13 @@ class StateTask(Behaviour):
         super().__init__()
         self.default_state = state
 
-    def initialize(self):
+    def _initialize(self):
         self.state = self.default_state
 
-    def update(self) -> Status:
+    def _update(self) -> Status:
         return self.state
 
-    def terminate(self):
+    def _terminate(self):
         pass
 
 
@@ -24,17 +24,17 @@ class XThenY(Behaviour):
         self.accessed = False
         self.x, self.y = x, y
 
-    def initialize(self):
+    def _initialize(self):
         self.state = self.x
 
-    def update(self) -> Status:
+    def _update(self) -> Status:
         if self.accessed:
             self.state = self.y
         else:
             self.accessed = True
         return self.state
 
-    def terminate(self):
+    def _terminate(self):
         pass
 
 

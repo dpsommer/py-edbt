@@ -15,15 +15,14 @@ from edbt import (
 from .mocks import *
 
 
-def setup_composite(cls: Type[Composite], children: List[Behaviour], *args):
-    tree = BehaviourTree()
+def setup_composite(tree: BehaviourTree, cls: Type[Composite], children: List[Behaviour], *args):
     composite = cls(tree, *args)
 
     for child in children:
         composite.add_child(child)
 
-    tree.start(composite, None)
-    return tree, composite
+    tree.start(composite)
+    return composite
 
 
 @pytest.mark.parametrize(
@@ -42,8 +41,8 @@ def setup_composite(cls: Type[Composite], children: List[Behaviour], *args):
         ),
     ]
 )
-def test_selector(children, expected_states):
-    tree, selector = setup_composite(Selector, children)
+def test_selector(tree, children, expected_states):
+    selector = setup_composite(tree, Selector, children)
 
     for state in expected_states:
         tree.tick()
@@ -66,8 +65,8 @@ def test_selector(children, expected_states):
         ),
     ]
 )
-def test_sequencer(children, expected_states):
-    tree, sequencer = setup_composite(Sequencer, children)
+def test_sequencer(tree, children, expected_states):
+    sequencer = setup_composite(tree, Sequencer, children)
 
     for state in expected_states:
         tree.tick()
@@ -123,8 +122,8 @@ def test_sequencer(children, expected_states):
         ),
     ]
 )
-def test_parallel(policy, children, expected_states):
-    tree, parallel = setup_composite(Parallel, children, policy)
+def test_parallel(tree, policy, children, expected_states):
+    parallel = setup_composite(tree, Parallel, children, policy)
 
     for state in expected_states:
         tree.tick()
