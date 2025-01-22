@@ -12,23 +12,23 @@ class Behaviour(ABC):
 
     def tick(self) -> Status:
         if self.state != Status.RUNNING:
-            self.initialize()
-        self.state = self.update()
+            self._initialize()
+        self.state = self._update()
         if self.state != Status.RUNNING:
-            self.terminate()
+            self._terminate()
         return self.state
 
     @abstractmethod
-    def initialize(self) -> None:
+    def _initialize(self) -> None:
         pass
 
     @abstractmethod
-    def update(self) -> Status:
+    def _update(self) -> Status:
         pass
 
     @abstractmethod
-    def terminate(self) -> None:
+    def _terminate(self) -> None:
         pass
 
-    def abort(self) -> None:
+    def _abort(self) -> None:
         self.state = Status.ABORTED

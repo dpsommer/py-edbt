@@ -18,13 +18,13 @@ class Parallel(Composite):
         self._successes = 0
         self._failures = 0
 
-    def initialize(self):
+    def _initialize(self):
         self._successes = 0
         self._failures = 0
         for child in self._children:
-            self._tree.start(child, self.on_child_complete)
+            self._tree.start(child, self._on_child_complete)
 
-    def on_child_complete(self, status: Status):
+    def _on_child_complete(self, status: Status):
         if status is Status.SUCCESS:
             self._successes += 1
             if (self._success_policy is SuccessPolicy.REQUIRE_ONE
@@ -38,13 +38,13 @@ class Parallel(Composite):
 
         if (self.state is not Status.RUNNING
                 and self._successes + self._failures < len(self._children)):
-            self.terminate()
+            self._terminate()
 
-    def terminate(self):
+    def _terminate(self):
         for child in self._children:
             if child.state is Status.RUNNING:
                 self._tree.abort(child)
 
-    def abort(self):
+    def _abort(self):
         self.state = Status.ABORTED
-        self.terminate()
+        self._terminate()

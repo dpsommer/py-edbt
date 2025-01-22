@@ -5,7 +5,6 @@ from edbt import (
     BehaviourTree,
     Behaviour,
     Status,
-    StatusObserver,
 )
 
 
@@ -16,14 +15,20 @@ class Composite(Behaviour):
         self._tree = tree
         self._children: List[Behaviour] = []
 
-    def update(self):
+    @property
+    def children(self):
+        # return a copy of the list to avoid mutation
+        # except through the dedicated methods
+        return list(self._children)
+
+    def _update(self):
         return Status.RUNNING
 
-    def terminate(self): pass
-    def abort(self): pass
+    def _terminate(self): pass
+    def _abort(self): pass
 
     @abstractmethod
-    def on_child_complete(self, status: Status):
+    def _on_child_complete(self, status: Status):
         pass
 
     def add_child(self, child: Behaviour):
@@ -36,17 +41,6 @@ class Composite(Behaviour):
     def clear_children(self):
         self._children.clear()
 
-    # abort rules
-    def lower_priority(self, o: StatusObserver):
-        found = False
-
-        for child in self._children:
-            if found and child.state == Status.RUNNING:
-                self._tree.abort(child)
-            if child == self:
-                found = True
-                self._tree.start(self, o)
-
 
 class Ordered(Composite):
 
@@ -54,13 +48,13 @@ class Ordered(Composite):
         super().__init__(tree)
         self._children_iter: Iterator[Behaviour] = None
 
-    def initialize(self):
+    def _initialize(self):
         if len(self._children) > 0:
             self._children_iter = iter(self._children)
             first_child = next(self._children_iter)
-            self._tree.start(first_child, self.on_child_complete)
+            self._tree.start(first_child, self._on_child_complete)
 
-    def abort(self):
+    def _abort(self):
         self.state = Status.ABORTED
         for child in self._children:
             if child.state == Status.RUNNING:

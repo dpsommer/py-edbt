@@ -1,4 +1,7 @@
+# sibling modules
+from .abortrule import AbortRule
 from .behaviour import Behaviour
+from .conditions import *
 from .status import Status
 from .tree import (
     BehaviourTree,
@@ -6,7 +9,7 @@ from .tree import (
     BlackboardObserver,
     StatusObserver,
 )
-from .conditions import *
+# submodules
 from .behaviours import *
 
 from types import ModuleType

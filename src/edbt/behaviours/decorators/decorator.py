@@ -4,8 +4,9 @@ from edbt import BehaviourTree, Behaviour
 class Decorator(Behaviour):
 
     def __init__(self, tree: BehaviourTree, child: Behaviour):
+        super().__init__()
         self._tree = tree
-        self._child = child
+        self.child = child
 
-    def terminate(self) -> None: pass
-    def abort(self) -> None: pass
+    def _terminate(self) -> None: pass
+    def _abort(self) -> None: pass
