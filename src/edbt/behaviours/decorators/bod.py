@@ -1,13 +1,13 @@
 from typing import Type
 
 from edbt import (
-    AbortRule,
     BehaviourTree,
     Behaviour,
     Condition,
     Status,
 )
 
+from .abortrules import AbortRule
 from .decorator import Decorator
 
 

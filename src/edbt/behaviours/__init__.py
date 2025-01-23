@@ -1,5 +1,6 @@
 from .composite import *
 from .decorators import *
+from .services import *
 
 from types import ModuleType
 

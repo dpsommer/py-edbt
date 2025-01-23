@@ -1,10 +1,19 @@
-from edbt import (
-    AbortRule,
-    Behaviour,
-    Status,
-)
+from abc import ABC, abstractmethod
 
-from .composite import Composite
+from edbt import Behaviour, Status
+
+from ..composite import Composite
+
+
+class AbortRule(ABC):
+
+    def __init__(self, parent: Behaviour):
+        super().__init__()
+        self.parent = parent
+
+    @abstractmethod
+    def __call__(self, b: Behaviour):
+        pass
 
 
 class LowerPriority(AbortRule):
@@ -22,7 +31,3 @@ class LowerPriority(AbortRule):
             if child == b:
                 found = True
                 self.parent._tree.start(b, self.stop_on_complete)
-
-__all__ = [
-    "LowerPriority",
-]
