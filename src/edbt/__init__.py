@@ -1,5 +1,4 @@
 # sibling modules
-from .abortrule import AbortRule
 from .behaviour import Behaviour
 from .conditions import *
 from .status import Status

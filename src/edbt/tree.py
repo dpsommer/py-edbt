@@ -1,8 +1,19 @@
 from collections import deque, defaultdict
+from dataclasses import dataclass
+from heapq import heappush, heappop
+from typing import Callable, Tuple
 
 from .behaviour import Behaviour
 from .observers import BlackboardObserver, StatusObserver
 from .status import Status
+
+
+@dataclass
+class Message:
+    sender: "BehaviourTree"
+    request: Tuple[str, tuple]
+    condition: Callable[[], bool]
+    timeout: int
 
 
 class Blackboard:
@@ -17,6 +28,7 @@ class BehaviourTree:
     def __init__(self):
         self.blackboard = Blackboard()
         self._scheduler: deque[Behaviour] = deque()
+        self._mailbox = []
 
     def tick(self):
         self._scheduler.append(None)
@@ -71,3 +83,12 @@ class BehaviourTree:
             self.blackboard.observers[key].remove(obs)
         except KeyError:
             pass  # no-op if key or obs aren't in the map
+
+    def receive_message(self, msg: Message):
+        heappush(self._mailbox, (msg.timeout, msg))
+
+    def read_message(self) -> Tuple[int, Message]:
+        heappop(self._mailbox)
+
+    def mailbox_size(self) -> int:
+        return len(self._mailbox)
