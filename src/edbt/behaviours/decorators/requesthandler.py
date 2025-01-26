@@ -1,11 +1,11 @@
 from edbt import (
     BehaviourTree,
     Behaviour,
-    HasValue,
 )
 
 from .bod import BOD
 from .abortrules import LowerPriority
+from ..conditions import HasValue
 
 
 class RequestHandler(BOD):

@@ -3,12 +3,12 @@ from typing import Type
 from edbt import (
     BehaviourTree,
     Behaviour,
-    Condition,
     Status,
 )
 
 from .abortrules import AbortRule
 from .decorator import Decorator
+from ..conditions import Condition
 
 
 class BOD(Decorator):

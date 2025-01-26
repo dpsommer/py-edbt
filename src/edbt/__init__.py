@@ -1,6 +1,5 @@
 # sibling modules
 from .behaviour import Behaviour
-from .conditions import *
 from .status import Status
 from .tree import BehaviourTree, Message
 from .observers import *
