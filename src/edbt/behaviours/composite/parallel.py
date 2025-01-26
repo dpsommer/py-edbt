@@ -19,6 +19,7 @@ class Parallel(Composite):
         self._failures = 0
 
     def _initialize(self):
+        super()._initialize()
         self._successes = 0
         self._failures = 0
         for child in self._children:
@@ -46,5 +47,5 @@ class Parallel(Composite):
                 self._tree.abort(child)
 
     def _abort(self):
-        self.state = Status.ABORTED
+        super()._abort()
         self._terminate()

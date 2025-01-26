@@ -32,22 +32,15 @@ class BOD(Decorator):
         self._abort_rule = abort_rule(parent) if abort_rule else None
 
     def _initialize(self):
-        self._tree.add_observer(self._key, self._on_receive_update)
+        self._tree.add_observer(self._key, self._on_key_updated)
 
     def _update(self) -> Status:
         if self._condition(self._tree, self._key, self._value):
-            self._tree.start(self.child, self._on_child_complete)
-            return Status.RUNNING
+            return self.child.tick()
         return Status.FAILURE
 
-    def _on_child_complete(self, status: Status) -> None:
-        if status is Status.SUCCESS:
-            self.state = status
-        else:
-            self.state = Status.FAILURE
-
-    def _on_receive_update(self, value) -> None:
+    def _on_key_updated(self, value) -> None:
         if value is not None:
             if self._abort_rule:
                 self._abort_rule(self)
-            self._tree.remove_observer(self._key, self._on_receive_update)
+            self._tree.remove_observer(self._key, self._on_key_updated)

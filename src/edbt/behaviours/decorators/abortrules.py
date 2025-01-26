@@ -19,9 +19,6 @@ class AbortRule(ABC):
 class LowerPriority(AbortRule):
     parent: Composite
 
-    def stop_on_complete(self, s: Status):
-        self.parent._tree.stop(self.parent, s)
-
     def __call__(self, b: Behaviour):
         found = False
 
@@ -30,4 +27,4 @@ class LowerPriority(AbortRule):
                 self.parent._tree.abort(child)
             if child == b:
                 found = True
-                self.parent._tree.start(b, self.stop_on_complete)
+                self.parent._tree.start(b)

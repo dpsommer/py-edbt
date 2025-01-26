@@ -1,12 +1,13 @@
-import time
+import asyncio
 from abc import abstractmethod
-from multiprocessing import Process
 
 from edbt import (
     Behaviour,
     Status,
     BehaviourTree,
 )
+
+_background_tasks = set()
 
 
 class Service(Behaviour):
@@ -15,9 +16,12 @@ class Service(Behaviour):
         self.child = child
         self._tree = tree
         self._active = True
-        self._stopped = True
+        self._running = False
         self._frequency = frequency
-        self._proc = Process(target=self.service)
+
+    def reset(self):
+        super().reset()
+        self.child.reset()
 
     def activate(self):
         self._active = True
@@ -25,32 +29,38 @@ class Service(Behaviour):
     def deactivate(self):
         self._active = False
 
-    def service(self):
-        while not self._stopped:
+    async def service(self):
+        while self._running:
             if not self._active:
-                time.sleep(self._frequency)
-            self._run()
-            time.sleep(self._frequency)
+                await asyncio.sleep(self._frequency)
+                continue
+            await self._run()
+            await asyncio.sleep(self._frequency)
 
     @abstractmethod
-    def _run(self):
+    async def _run(self):
         pass
 
     def _initialize(self):
-        if self._stopped:
-            self._stopped = False
-            self._proc.start()
+        self.state = Status.RUNNING
+        if not self._running:
+            # run the service as a background coroutine
+            task = asyncio.create_task(self.service())
+            # keep a reference to the task to avoid it being GC'd;
+            # discard it on completion after it's stopped
+            _background_tasks.add(task)
+            task.add_done_callback(_background_tasks.discard)
+            self._running = True
         self._tree.start(self.child, self._on_child_complete)
 
     def _update(self):
-        return Status.RUNNING
+        return self.state
 
     def _terminate(self):
-        self._stopped = True
-        self._proc.join()
+        self._running = False
 
     def _abort(self):
-        self.state = Status.ABORTED
+        super()._abort()
         self._terminate()
         self._tree.abort(self.child)
 

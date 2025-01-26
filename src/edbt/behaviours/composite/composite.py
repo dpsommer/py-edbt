@@ -21,11 +21,18 @@ class Composite(Behaviour):
         # except through the dedicated methods
         return list(self._children)
 
+    def reset(self):
+        super().reset()
+        for child in self.children:
+            child.reset()
+
+    def _initialize(self):
+        self.state = Status.RUNNING
+
     def _update(self):
-        return Status.RUNNING
+        return self.state
 
     def _terminate(self): pass
-    def _abort(self): pass
 
     @abstractmethod
     def _on_child_complete(self, status: Status):
@@ -49,13 +56,14 @@ class Ordered(Composite):
         self._children_iter: Iterator[Behaviour] = None
 
     def _initialize(self):
+        super()._initialize()
         if len(self._children) > 0:
             self._children_iter = iter(self._children)
             first_child = next(self._children_iter)
             self._tree.start(first_child, self._on_child_complete)
 
     def _abort(self):
-        self.state = Status.ABORTED
+        super()._abort()
         for child in self._children:
             if child.state == Status.RUNNING:
                 self._tree.abort(child)

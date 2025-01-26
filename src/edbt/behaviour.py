@@ -11,12 +11,16 @@ class Behaviour(ABC):
         self.observer: StatusObserver = None
 
     def tick(self) -> Status:
-        if self.state != Status.RUNNING:
+        if self.state == Status.INVALID:
             self._initialize()
         self.state = self._update()
         if self.state != Status.RUNNING:
             self._terminate()
         return self.state
+
+    def reset(self) -> None:
+        self.state = Status.INVALID
+        self.observer = None
 
     @abstractmethod
     def _initialize(self) -> None:

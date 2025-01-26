@@ -8,5 +8,8 @@ class Decorator(Behaviour):
         self._tree = tree
         self.child = child
 
+    def reset(self):
+        super().reset()
+        self.child.reset()
+
     def _terminate(self) -> None: pass
-    def _abort(self) -> None: pass

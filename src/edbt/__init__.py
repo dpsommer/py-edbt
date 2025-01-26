@@ -2,12 +2,8 @@
 from .behaviour import Behaviour
 from .conditions import *
 from .status import Status
-from .tree import (
-    BehaviourTree,
-    Blackboard,
-    BlackboardObserver,
-    StatusObserver,
-)
+from .tree import BehaviourTree, Message
+from .observers import *
 # submodules
 from .behaviours import *
 
