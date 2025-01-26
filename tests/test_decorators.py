@@ -30,7 +30,7 @@ def setup_bod(tree, parent, condition, abort_rule=None):
     parent.add_child(bod)
     parent.add_child(RunningTask())
 
-    tree.start(parent)
+    tree.root = parent
     return bod
 
 

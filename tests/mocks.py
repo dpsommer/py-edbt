@@ -1,4 +1,4 @@
-from edbt import Behaviour, Status
+from edbt import Behaviour, Condition, Status
 
 
 class StateTask(Behaviour):
@@ -52,9 +52,7 @@ class RunningTask(StateTask):
     def __init__(self):
         super().__init__(Status.RUNNING)
 
-__all__ = [
-    "RunningTask",
-    "SuccessTask",
-    "FailureTask",
-    "XThenY",
-]
+
+class AlwaysTrue(Condition):
+    def __call__(self, *args, **kwargs):
+        return True

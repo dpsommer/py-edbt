@@ -21,7 +21,7 @@ def setup_composite(tree: BehaviourTree, cls: Type[Composite], children: List[Be
     for child in children:
         composite.add_child(child)
 
-    tree.start(composite)
+    tree.root = composite
     return composite
 
 
@@ -53,7 +53,7 @@ def test_selector(tree, children, expected_states):
     "children,expected_states", [
         (
             [XThenY(Status.SUCCESS, Status.FAILURE)],
-            [Status.SUCCESS, Status.FAILURE],
+            [Status.SUCCESS, Status.SUCCESS, Status.FAILURE],
         ),
         (
             [SuccessTask(), RunningTask()],
@@ -124,6 +124,7 @@ def test_sequencer(tree, children, expected_states):
 )
 def test_parallel(tree, policy, children, expected_states):
     parallel = setup_composite(tree, Parallel, children, policy)
+
 
     for state in expected_states:
         tree.tick()
