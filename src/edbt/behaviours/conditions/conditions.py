@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from edbt import Behaviour, BehaviourTree, Status
+from edbt import blackboard, Behaviour, Status
 
 
 class Condition(Behaviour):
@@ -19,13 +19,13 @@ class Condition(Behaviour):
 
 
 class _HasValue(Condition):
-    def __call__(self, tree: BehaviourTree, key: str, *args, **kwargs):
-        return key in tree.values and tree.values[key] != None
+    def __call__(self, key: str, *args, **kwargs):
+        return blackboard.get(key) != None
 
 
 class _IsEqual(Condition):
-    def __call__(self, tree: BehaviourTree, key: str, value, *args, **kwargs):
-        return key in tree.values and tree.values[key] == value
+    def __call__(self, key: str, value, *args, **kwargs):
+        return blackboard.get(key) == value
 
 HasValue = _HasValue()
 IsEqual = _IsEqual()

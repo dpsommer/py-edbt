@@ -19,12 +19,19 @@ class AbortRule(ABC):
 class LowerPriority(AbortRule):
     parent: Composite
 
+    # FIXME: instead of passing the parent,
+    # traverse the tree and find the first
+    # composite ancestor of the given child
     def __call__(self, b: Behaviour):
         found = False
 
         for child in self.parent.children:
             if found and child.state == Status.RUNNING:
-                self.parent._tree.abort(child)
+                # if a sibling to the right of the given
+                # child is running, abort the parent so it
+                # restarts on the next tick
+                self.parent.abort()
+                return
             if child == b:
                 found = True
-                self.parent._tree.start(b)
+                child.tick()

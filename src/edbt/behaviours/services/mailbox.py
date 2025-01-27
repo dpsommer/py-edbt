@@ -1,5 +1,7 @@
 import time
 
+from edbt import blackboard
+
 from .service import Service
 
 
@@ -13,5 +15,5 @@ class CheckMailbox(Service):
             timeout, msg = self._tree.read_message()
             now = time.time_ns()
             if timeout > now and msg.condition():
-                self._tree.update_blackboard(*msg.request)
+                blackboard.update((msg.request))
                 return

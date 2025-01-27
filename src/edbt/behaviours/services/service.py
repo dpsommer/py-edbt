@@ -51,22 +51,14 @@ class Service(Behaviour):
             _background_tasks.add(task)
             task.add_done_callback(_background_tasks.discard)
             self._running = True
-        self._tree.start(self.child, self._on_child_complete)
 
     def _update(self):
-        return self.state
+        return self.child.tick()
 
     def _terminate(self):
         self._running = False
 
-    def _abort(self):
-        super()._abort()
+    def abort(self):
+        super().abort()
         self._terminate()
-        self._tree.abort(self.child)
-
-    def _on_child_complete(self, status: Status) -> None:
-        if status is Status.SUCCESS:
-            self.state = status
-        else:
-            self.state = Status.FAILURE
-        self._terminate()
+        self.child.abort()

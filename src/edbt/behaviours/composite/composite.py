@@ -1,8 +1,7 @@
 from abc import abstractmethod
-from typing import List, Iterator
+from typing import List
 
 from edbt import (
-    BehaviourTree,
     Behaviour,
     Status,
 )
@@ -10,9 +9,8 @@ from edbt import (
 
 class Composite(Behaviour):
 
-    def __init__(self, tree: BehaviourTree):
+    def __init__(self):
         super().__init__()
-        self._tree = tree
         self._children: List[Behaviour] = []
 
     @property
@@ -29,14 +27,11 @@ class Composite(Behaviour):
     def _initialize(self):
         self.state = Status.RUNNING
 
+    @abstractmethod
     def _update(self):
-        return self.state
+        pass
 
     def _terminate(self): pass
-
-    @abstractmethod
-    def _on_child_complete(self, status: Status):
-        pass
 
     def add_child(self, child: Behaviour):
         self._children.append(child)
@@ -51,19 +46,19 @@ class Composite(Behaviour):
 
 class Ordered(Composite):
 
-    def __init__(self, tree):
-        super().__init__(tree)
-        self._children_iter: Iterator[Behaviour] = None
+    def __init__(self):
+        super().__init__()
+        self._children_iter: List[Behaviour] = None
+        self._idx = 0
 
     def _initialize(self):
         super()._initialize()
         if len(self._children) > 0:
-            self._children_iter = iter(self._children)
-            first_child = next(self._children_iter)
-            self._tree.start(first_child, self._on_child_complete)
+            self._idx = 0
+            self._children_iter = self.children
 
-    def _abort(self):
-        super()._abort()
+    def abort(self):
+        super().abort()
         for child in self._children:
             if child.state == Status.RUNNING:
-                self._tree.abort(child)
+                child.abort()

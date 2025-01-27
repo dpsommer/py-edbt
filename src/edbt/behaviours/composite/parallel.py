@@ -12,40 +12,49 @@ class SuccessPolicy(Enum):
 
 class Parallel(Composite):
 
-    def __init__(self, tree: BehaviourTree, policy: SuccessPolicy):
-        super().__init__(tree)
+    def __init__(self, policy: SuccessPolicy):
+        super().__init__()
         self._success_policy = policy
-        self._successes = 0
-        self._failures = 0
+        self._running_children = []
 
     def _initialize(self):
         super()._initialize()
-        self._successes = 0
-        self._failures = 0
-        for child in self._children:
-            self._tree.start(child, self._on_child_complete)
+        self._running_children = list(self.children)
 
-    def _on_child_complete(self, status: Status):
-        if status is Status.SUCCESS:
-            self._successes += 1
-            if (self._success_policy is SuccessPolicy.REQUIRE_ONE
-                    or self._successes == len(self._children)):
-                self._tree.stop(self, status)
-        else:
-            self._failures += 1
-            if (self._success_policy is SuccessPolicy.REQUIRE_ALL
-                    or self._failures == len(self._children)):
-                self._tree.stop(self, Status.FAILURE)
+    def _update(self) -> Status:
+        # track success count and required number of successes for RequireAll
+        # we only need len(runningNodes) successes each tick as we can imply that:
+        # * if RequireOne, we haven't succeeded yet but any Success will be enough
+        # * if RequireAll, completed tasks must have been Success as we fail fast
+        successes = 0
+        need_successes = len(self._running_children)
+        still_running = []
 
-        if (self.state is not Status.RUNNING
-                and self._successes + self._failures < len(self._children)):
-            self._terminate()
+        status = Status.FAILURE
+
+        for child in self._running_children:
+            s = child.tick()
+            if s is Status.SUCCESS:
+                successes += 1
+                if (successes == need_successes or
+                        self._success_policy is SuccessPolicy.REQUIRE_ONE):
+                    return s
+            elif s is Status.RUNNING:
+                status = Status.RUNNING
+                still_running.append(child)
+            elif self._success_policy is SuccessPolicy.REQUIRE_ALL:
+                return s
+
+        if status is Status.RUNNING:
+            self._running_children = still_running
+
+        return status
 
     def _terminate(self):
         for child in self._children:
             if child.state is Status.RUNNING:
-                self._tree.abort(child)
+                child.abort()
 
-    def _abort(self):
-        super()._abort()
+    def abort(self):
+        super().abort()
         self._terminate()
