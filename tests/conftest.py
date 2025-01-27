@@ -1,8 +1,9 @@
 import pytest
 
-from edbt import BehaviourTree
+from edbt import blackboard
 
 
-@pytest.fixture
-def tree() -> BehaviourTree:
-    return BehaviourTree()
+@pytest.fixture(autouse=True)
+def wipe_blackboard():
+    blackboard.clear()
+    blackboard._observers.clear()

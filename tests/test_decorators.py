@@ -1,6 +1,7 @@
 import pytest
 
 from edbt import (
+    blackboard,
     BehaviourTree,
     BOD,
     Condition,
@@ -17,10 +18,8 @@ TEST_KEY = "test"
 TEST_VALUE = "test"
 
 
-def setup_bod(tree, parent, condition, abort_rule=None):
+def setup_bod(parent, condition, abort_rule=None):
     bod = BOD(
-        tree=tree,
-        parent=parent,
         child=SuccessTask(),
         key=TEST_KEY,
         value=TEST_VALUE,
@@ -30,12 +29,11 @@ def setup_bod(tree, parent, condition, abort_rule=None):
     parent.add_child(bod)
     parent.add_child(RunningTask())
 
-    tree.root = parent
     return bod
 
 
 @pytest.mark.parametrize(
-        "condition,blackboard,expected",
+        "condition,state,expected",
         (
             [HasValue, dict(), Status.FAILURE],
             [HasValue, {TEST_KEY: TEST_VALUE}, Status.SUCCESS],
@@ -43,21 +41,23 @@ def setup_bod(tree, parent, condition, abort_rule=None):
             [IsEqual, {TEST_KEY: TEST_VALUE}, Status.SUCCESS],
         ),
 )
-def test_bod_conditions(tree: BehaviourTree, condition: Condition, blackboard: dict, expected: Status):
-    parent = Selector(tree)
-    bod = setup_bod(tree, parent, condition)
-    for k, v in blackboard.items():
-        tree.update_blackboard(k, v)
+def test_bod_conditions(condition: Condition, state: dict, expected: Status):
+    parent = Selector()
+    tree = BehaviourTree(parent)
+    bod = setup_bod(parent, condition)
+    for k, v in state.items():
+        blackboard[k] = v
     tree.tick()
 
     assert bod.state == expected
 
 
-def test_lower_priority_abort_rule(tree: BehaviourTree):
-    parent = Selector(tree)
-    bod = setup_bod(tree, parent, HasValue, LowerPriority)
+def test_lower_priority_abort_rule():
+    parent = Selector()
+    tree = BehaviourTree(parent)
+    bod = setup_bod(parent, HasValue, LowerPriority(parent))
     tree.tick()  # initialize the bod and its observer
-    tree.update_blackboard(TEST_KEY, TEST_VALUE)
+    blackboard[TEST_KEY] = TEST_VALUE
     tree.tick()
 
     assert parent._children[1].state == Status.ABORTED

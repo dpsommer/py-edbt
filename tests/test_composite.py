@@ -15,14 +15,14 @@ from edbt import (
 from .mocks import *
 
 
-def setup_composite(tree: BehaviourTree, cls: Type[Composite], children: List[Behaviour], *args):
-    composite = cls(tree, *args)
+def setup_composite(cls: Type[Composite], children: List[Behaviour], *args):
+    composite = cls(*args)
 
     for child in children:
         composite.add_child(child)
 
-    tree.root = composite
-    return composite
+    tree = BehaviourTree(composite)
+    return tree
 
 
 @pytest.mark.parametrize(
@@ -41,19 +41,18 @@ def setup_composite(tree: BehaviourTree, cls: Type[Composite], children: List[Be
         ),
     ]
 )
-def test_selector(tree, children, expected_states):
-    selector = setup_composite(tree, Selector, children)
+def test_selector(children, expected_states):
+    tree = setup_composite(Selector, children)
 
     for state in expected_states:
-        tree.tick()
-        assert selector.state == state
+        assert tree.tick() == state
 
 
 @pytest.mark.parametrize(
     "children,expected_states", [
         (
             [XThenY(Status.SUCCESS, Status.FAILURE)],
-            [Status.SUCCESS, Status.SUCCESS, Status.FAILURE],
+            [Status.SUCCESS, Status.FAILURE],
         ),
         (
             [SuccessTask(), RunningTask()],
@@ -65,12 +64,11 @@ def test_selector(tree, children, expected_states):
         ),
     ]
 )
-def test_sequencer(tree, children, expected_states):
-    sequencer = setup_composite(tree, Sequencer, children)
+def test_sequencer(children, expected_states):
+    tree = setup_composite(Sequencer, children)
 
     for state in expected_states:
-        tree.tick()
-        assert sequencer.state == state
+        assert tree.tick() == state
 
 
 @pytest.mark.parametrize(
@@ -122,10 +120,8 @@ def test_sequencer(tree, children, expected_states):
         ),
     ]
 )
-def test_parallel(tree, policy, children, expected_states):
-    parallel = setup_composite(tree, Parallel, children, policy)
-
+def test_parallel(policy, children, expected_states):
+    tree = setup_composite(Parallel, children, policy)
 
     for state in expected_states:
-        tree.tick()
-        assert parallel.state == state
+        assert tree.tick() == state
