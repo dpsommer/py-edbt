@@ -2,19 +2,17 @@ import asyncio
 from abc import abstractmethod
 
 from edbt import (
+    background_tasks,
     Behaviour,
     Status,
-    BehaviourTree,
 )
 
-_background_tasks = set()
 
 
 class Service(Behaviour):
-    def __init__(self, tree: BehaviourTree, child: Behaviour, frequency: float):
+    def __init__(self, child: Behaviour, frequency: float):
         super().__init__()
         self.child = child
-        self._tree = tree
         self._active = True
         self._running = False
         self._frequency = frequency
@@ -48,8 +46,8 @@ class Service(Behaviour):
             task = asyncio.create_task(self.service())
             # keep a reference to the task to avoid it being GC'd;
             # discard it on completion after it's stopped
-            _background_tasks.add(task)
-            task.add_done_callback(_background_tasks.discard)
+            background_tasks.add(task)
+            task.add_done_callback(background_tasks.discard)
             self._running = True
 
     def _update(self):

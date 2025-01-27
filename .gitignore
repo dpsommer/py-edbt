@@ -12,3 +12,7 @@ __pycache__/
 
 # scm automated versioning file
 version.py
+
+# misc
+TODO*
+scratch*

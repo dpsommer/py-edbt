@@ -7,10 +7,10 @@ from ..conditions import HasValue
 
 class RequestHandler(BOD):
 
-    def __init__(self, key: str, child: Behaviour=None):
+    def __init__(self, key: str, parent: Behaviour, child: Behaviour=None):
         super().__init__(
             condition=HasValue,
             key=key,
             child=child,
-            abort_rule=LowerPriority,
+            abort_rule=LowerPriority(parent),
         )

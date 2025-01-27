@@ -19,9 +19,6 @@ class AbortRule(ABC):
 class LowerPriority(AbortRule):
     parent: Composite
 
-    # FIXME: instead of passing the parent,
-    # traverse the tree and find the first
-    # composite ancestor of the given child
     def __call__(self, b: Behaviour):
         found = False
 

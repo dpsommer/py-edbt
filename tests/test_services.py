@@ -4,8 +4,8 @@ import time
 import pytest
 
 from edbt import (
+    mailroom,
     BehaviourTree,
-    CheckMailbox,
     Message,
     RequestHandler,
     Selector,
@@ -19,34 +19,38 @@ CHECK_MAILBOX_FREQUENCY = 0.1
 
 
 @pytest.fixture
-def rh_selector(tree):
-    selector = Selector(tree)
-    rh = RequestHandler(tree, selector, TEST_KEY, SuccessTask())
-    selector.add_child(rh)
+def rh_selector():
+    selector = Selector()
+    selector.add_child(RequestHandler(
+        key=TEST_KEY,
+        parent=selector,
+        child=SuccessTask()
+    ))
     selector.add_child(RunningTask())
     return selector
 
 
-@pytest.fixture
-def mailbox(tree: BehaviourTree, rh_selector):
-    return CheckMailbox(tree, rh_selector, CHECK_MAILBOX_FREQUENCY)
+@pytest.fixture(autouse=True)
+async def open_mailroom():
+    mailroom.start()
+    yield mailroom
+    mailroom.stop()
 
 
-async def test_check_mailbox(tree: BehaviourTree, mailbox: CheckMailbox):
-    tree.root = mailbox
-
-    msg = Message(
-        sender=None,
-        request=(TEST_KEY, ()),
-        condition=AlwaysTrue,
-        timeout=time.time_ns() + (2 * 1_000_000_000)
-    )
+async def test_check_mailbox(rh_selector: Selector):
+    tree = BehaviourTree(rh_selector)
 
     tree.tick()
 
-    tree.send_message(msg)
+    mailroom.send_message(Message(
+        sender=None,
+        receiver=tree,
+        request=(TEST_KEY, ()),
+        condition=AlwaysTrue,
+        timeout=time.time_ns() + (2 * 1_000_000_000)
+    ))
     await asyncio.sleep(0.2)
 
     tree.tick()
 
-    assert mailbox.state == Status.SUCCESS
+    assert rh_selector.state == Status.SUCCESS
