@@ -43,12 +43,10 @@ class Mailroom:
         while self._running:
             try:
                 timeout, msg = heappop(self._mailbox)
-                print("reading message", msg)
                 now = time.time_ns()
                 if timeout > now and msg.condition():
                     k, v = msg.request
                     blackboard[k] = v
-                    print([f"{k} {v}" for k, v in blackboard.items()])
             except:  # when we run out of messages, sleep til next cycle
                 await asyncio.sleep(MAILROOM_CHECK_FREQUENCY)
 
