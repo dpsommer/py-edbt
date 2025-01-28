@@ -18,17 +18,23 @@ class Condition(Behaviour):
         pass
 
 
-class _HasValue(Condition):
-    def __call__(self, key: str, *args, **kwargs):
-        return blackboard.get(key) != None
+class HasValue(Condition):
+    def __init__(self, key: str):
+        super().__init__()
+        self._key = key
+
+    def __call__(self, *args, **kwargs):
+        return blackboard.get(self._key) != None
 
 
-class _IsEqual(Condition):
-    def __call__(self, key: str, value, *args, **kwargs):
-        return blackboard.get(key) == value
+class IsEqual(Condition):
+    def __init__(self, key: str, value):
+        super().__init__()
+        self._key = key
+        self._value = value
 
-HasValue = _HasValue()
-IsEqual = _IsEqual()
+    def __call__(self, *args, **kwargs):
+        return blackboard.get(self._key) == self._value
 
 __all__ = [
     "Condition",

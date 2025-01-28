@@ -1,4 +1,4 @@
-from edbt import blackboard, Status
+from edbt import blackboard, HasValue, Status
 from edbt.builder import TreeBuilder
 
 from .mocks import *
@@ -35,7 +35,7 @@ def test_composite_decorator_child():
                 .request_handler(TEST_KEY)
                     .selector()
                         .leaf(FailureTask())
-                        .leaf(SuccessTask())
+                        .leaf(HasValue(TEST_KEY))
                     .done()
                 .leaf(RunningTask())
             .build())

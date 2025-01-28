@@ -9,7 +9,7 @@ class RequestHandler(BOD):
 
     def __init__(self, key: str, parent: Behaviour, child: Behaviour=None):
         super().__init__(
-            condition=HasValue,
+            condition=HasValue(key),
             key=key,
             child=child,
             abort_rule=LowerPriority(parent),

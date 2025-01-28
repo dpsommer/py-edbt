@@ -19,12 +19,10 @@ class BOD(Decorator):
             self,
             condition: Condition,
             key: str,
-            value=None,
             child: Behaviour=None,
             abort_rule: AbortRule=None):
         super().__init__(child)
         self._key = key
-        self._value = value
         self._condition = condition
         self._abort_rule = abort_rule
 
@@ -32,7 +30,7 @@ class BOD(Decorator):
         blackboard.add_observer(self._key, self._on_key_updated)
 
     def _update(self) -> Status:
-        if self._condition(self._key, self._value):
+        if self._condition():
             return self.child.tick()
         return Status.FAILURE
 
