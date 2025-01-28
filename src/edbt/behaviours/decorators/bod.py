@@ -1,6 +1,5 @@
 from edbt import (
     blackboard,
-    BehaviourTree,
     Behaviour,
     Status,
 )
@@ -17,8 +16,8 @@ class BOD(Decorator):
 
     def __init__(
             self,
-            condition: Condition,
             key: str,
+            condition: Condition,
             child: Behaviour=None,
             abort_rule: AbortRule=None):
         super().__init__(child)
