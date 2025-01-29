@@ -117,6 +117,16 @@ class TreeBuilder:
         self._decorator = d
         return self
 
+    def inverse(self) -> "TreeBuilder":
+        """Adds an inverse Decorator node to the tree.
+
+        Inverts the child's status response - Status.RUNNING remains the same,
+        Status.SUCCESS becomes Status.FAILURE, and any other response becomes
+        Status.SUCCESS. The next node in the tree will be added as its child.
+        """
+        self.decorator(Inverse())
+        return self
+
     def blackboard_observer(self, key: str, condition: Condition,
                             abort_rule: Type[AbortRule]=None) -> "TreeBuilder":
         """Adds a BOD (Blackboard Observer Decorator) node to the tree.
