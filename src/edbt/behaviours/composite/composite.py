@@ -54,11 +54,19 @@ class Ordered(Composite):
     def _initialize(self):
         super()._initialize()
         if len(self._children) > 0:
-            self._idx = 0
-            self._children_iter = self.children
+            self._reset_iter()
+
+    def _reset_iter(self):
+        self._idx = 0
+        self._children_iter = list(self.children)
 
     def abort(self):
         super().abort()
         for child in self._children:
             if child.state == Status.RUNNING:
                 child.abort()
+        self._reset_iter()
+
+    def reset(self):
+        super().reset()
+        self._reset_iter()
