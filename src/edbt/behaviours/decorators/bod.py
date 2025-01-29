@@ -30,11 +30,12 @@ class BOD(Decorator):
 
     def _update(self) -> Status:
         if self._condition():
-            return self.child.tick()
+            status = self.child.tick()
+            return status
         return Status.FAILURE
 
     def _on_key_updated(self, value) -> None:
-        if value is not None:
+        if value is not None and self._condition():
             if self._abort_rule:
                 self._abort_rule(self)
             blackboard.remove_observer(self._key, self._on_key_updated)

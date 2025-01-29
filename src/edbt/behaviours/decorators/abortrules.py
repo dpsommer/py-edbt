@@ -31,4 +31,3 @@ class LowerPriority(AbortRule):
                 return
             if child == b:
                 found = True
-                child.tick()
