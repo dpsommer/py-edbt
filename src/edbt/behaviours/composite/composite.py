@@ -65,7 +65,8 @@ class Ordered(Composite):
         for child in self._children:
             if child.state == Status.RUNNING:
                 child.abort()
-        self._reset_iter()
+        # move the index so we exit the update loop after abort is called
+        self._idx = len(self._children_iter)
 
     def reset(self):
         super().reset()

@@ -30,8 +30,7 @@ class BOD(Decorator):
 
     def _update(self) -> Status:
         if self._condition():
-            status = self.child.tick()
-            return status
+            return self.child.tick()
         return Status.FAILURE
 
     def _on_key_updated(self, value) -> None:
