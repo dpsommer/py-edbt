@@ -18,25 +18,17 @@ class Message:
 
 class BehaviourTree:
 
-    root: Behaviour
-
     def __init__(self):
-        self.root = None
         self.values = dict()
         self.observers = defaultdict(set)
         self._scheduler: deque[Behaviour] = deque()
         self._mailbox = []
 
-    def tick(self) -> Status:
-        if len(self._scheduler) == 0:
-            self.start(self.root)
-            if self.root.state != Status.INVALID:
-                self.root.reset()
+    def tick(self) -> None:
         # use None to mark the end of each tick
         self._scheduler.append(None)
         while self.step():
             continue
-        return self.root.state
 
     def step(self) -> bool:
         b = self._scheduler.popleft()

@@ -21,7 +21,7 @@ def setup_composite(tree: BehaviourTree, cls: Type[Composite], children: List[Be
     for child in children:
         composite.add_child(child)
 
-    tree.root = composite
+    tree.start(composite)
     return composite
 
 

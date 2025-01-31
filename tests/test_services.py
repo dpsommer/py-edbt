@@ -33,7 +33,7 @@ def mailbox(tree: BehaviourTree, rh_selector):
 
 
 async def test_check_mailbox(tree: BehaviourTree, mailbox: CheckMailbox):
-    tree.root = mailbox
+    tree.start(mailbox)
 
     msg = Message(
         sender=None,
