@@ -5,7 +5,10 @@ from .mailroom import *
 from .status import Status
 from .tree import BehaviourTree
 # submodules
-from .behaviours import *
+from .composite import *
+from .conditions import *
+from .decorators import *
+from .services import *
 
 from types import ModuleType
 
