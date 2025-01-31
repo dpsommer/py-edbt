@@ -27,12 +27,6 @@ class Composite(Behaviour):
     def _initialize(self):
         self.state = Status.RUNNING
 
-    @abstractmethod
-    def _update(self):
-        pass
-
-    def _terminate(self): pass
-
     def add_child(self, child: Behaviour):
         self._children.append(child)
 

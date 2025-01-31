@@ -13,9 +13,6 @@ class StateTask(Behaviour):
     def _update(self) -> Status:
         return self.state
 
-    def _terminate(self):
-        pass
-
 
 class XThenY(Behaviour):
 
@@ -33,9 +30,6 @@ class XThenY(Behaviour):
         else:
             self.accessed = True
         return self.state
-
-    def _terminate(self):
-        pass
 
 
 class SuccessTask(StateTask):

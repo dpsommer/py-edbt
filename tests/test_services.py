@@ -3,26 +3,20 @@ import time
 
 import pytest
 
-from edbt import (
-    mailroom,
-    BehaviourTree,
-    Message,
-    RequestHandler,
-    Selector,
-    Status,
-)
+import edbt
 
 from .mocks import AlwaysTrue, SuccessTask, RunningTask
 
-TEST_KEY = "test"
-CHECK_MAILBOX_FREQUENCY = 0.1
+_TEST_KEY = "test"
+_NAMESPACE = "test_services"
 
 
 @pytest.fixture
 def rh_selector():
-    selector = Selector()
-    selector.add_child(RequestHandler(
-        key=TEST_KEY,
+    selector = edbt.Selector()
+    selector.add_child(edbt.RequestHandler(
+        key=_TEST_KEY,
+        namespace=_NAMESPACE,
         parent=selector,
         child=SuccessTask()
     ))
@@ -32,20 +26,20 @@ def rh_selector():
 
 @pytest.fixture(autouse=True)
 async def open_mailroom():
-    mailroom.start()
-    yield mailroom
-    mailroom.stop()
+    edbt.mail_room.start()
+    yield edbt.mail_room
+    edbt.mail_room.stop()
 
 
-async def test_check_mailbox(rh_selector: Selector):
-    tree = BehaviourTree(rh_selector)
+async def test_check_mailbox(rh_selector: edbt.Selector):
+    tree = edbt.BehaviourTree(rh_selector)
 
     tree.tick()
 
-    mailroom.send_message(Message(
+    edbt.mail_room.send_message(edbt.Message(
         sender=None,
-        receiver=tree,
-        request=(TEST_KEY, ()),
+        receiver=_NAMESPACE,
+        request=(_TEST_KEY, ()),
         condition=AlwaysTrue,
         timeout=time.time_ns() + (2 * 1_000_000_000)
     ))
@@ -53,4 +47,4 @@ async def test_check_mailbox(rh_selector: Selector):
 
     tree.tick()
 
-    assert rh_selector.state == Status.SUCCESS
+    assert rh_selector.state == edbt.Status.SUCCESS

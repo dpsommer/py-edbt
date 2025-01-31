@@ -1,43 +1,36 @@
 from abc import abstractmethod
 
-from edbt import blackboard, Behaviour, Status
+import edbt
+from edbt import blackboard
 
 
-class Condition(Behaviour):
+class Condition(edbt.Behaviour):
     @abstractmethod
     def __call__(self, *args, **kwargs):
         pass
 
-    def _initialize(self):
-        pass
-
     def _update(self):
-        return Status.SUCCESS if self() else Status.FAILURE
-
-    def _terminate(self):
-        pass
+        return edbt.Status.SUCCESS if self() else edbt.Status.FAILURE
 
 
 class HasValue(Condition):
-    def __init__(self, key: str):
+    def __init__(self, key: str, namespace: str=None):
         super().__init__()
         self._key = key
+        self._namespace = namespace
 
     def __call__(self, *args, **kwargs):
-        return blackboard.get(self._key) != None
+        return blackboard.read(self._key, self._namespace) != None
 
 
 class IsEqual(Condition):
-    def __init__(self, key: str, value):
+    def __init__(self, key: str, value, namespace: str=None):
         super().__init__()
         self._key = key
         self._value = value
+        self._namespace = namespace
 
     def __call__(self, *args, **kwargs):
-        return blackboard.get(self._key) == self._value
+        return blackboard.read(self._key, self._namespace) == self._value
 
-__all__ = [
-    "Condition",
-    "HasValue",
-    "IsEqual",
-]
+__all__ = ["Condition", "HasValue", "IsEqual"]

@@ -19,7 +19,6 @@ class Behaviour(ABC):
     def reset(self) -> None:
         self.state = Status.INVALID
 
-    @abstractmethod
     def _initialize(self) -> None:
         pass
 
@@ -27,7 +26,6 @@ class Behaviour(ABC):
     def _update(self) -> Status:
         pass
 
-    @abstractmethod
     def _terminate(self) -> None:
         pass
 

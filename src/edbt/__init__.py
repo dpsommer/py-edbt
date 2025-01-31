@@ -1,9 +1,8 @@
 # sibling modules
 from .behaviour import Behaviour
-from .blackboard import *
-from .mailroom import *
+from .blackboard import Blackboard
 from .status import Status
-from .tree import BehaviourTree
+from .tree import *
 # submodules
 from .composite import *
 from .conditions import *

@@ -4,24 +4,24 @@ from dataclasses import dataclass
 from heapq import heappush, heappop
 from typing import Callable, List, Tuple
 
-from .blackboard import blackboard
-from .tree import BehaviourTree
+import edbt
 
-MAILROOM_CHECK_FREQUENCY = 0.1
+from .service import background_tasks
 
-background_tasks = set()
+MAIL_ROOM_CHECK_FREQUENCY = 0.1
 
 
 @dataclass
 class Message:
-    sender: BehaviourTree
-    receiver: BehaviourTree
+    # blackboard namespaces for sender/receiver
+    sender: str
+    receiver: str
     request: Tuple[str, tuple]
     condition: Callable[[], bool]
     timeout: int
 
 
-class Mailroom:
+class MailRoom:
     def __init__(self):
         self._mailbox: List[Tuple[int, Message]] = []
         self._running = True
@@ -46,11 +46,11 @@ class Mailroom:
                 now = time.time_ns()
                 if timeout > now and msg.condition():
                     k, v = msg.request
-                    blackboard[k] = v
+                    edbt.blackboard.write(k, v, msg.receiver)
             except:  # when we run out of messages, sleep til next cycle
-                await asyncio.sleep(MAILROOM_CHECK_FREQUENCY)
+                await asyncio.sleep(MAIL_ROOM_CHECK_FREQUENCY)
 
 
-mailroom = Mailroom()
+mail_room = MailRoom()
 
-__all__ = ["background_tasks", "Message", "mailroom"]
+__all__ = ["background_tasks", "Message", "mail_room"]

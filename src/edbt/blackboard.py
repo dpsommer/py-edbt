@@ -4,14 +4,15 @@ from collections.abc import MutableMapping
 
 BlackboardObserver = Callable[[Any], None]
 
+_DEFAULT_NAMESPACE = "default"
 
-# TODO: localized states for individual BTs?
+
 class Blackboard(MutableMapping):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self._values = dict()
         self._observers = defaultdict(set)
-        self.update(dict(*args, **kwargs))
+        self.update(dict(**kwargs))
 
     def add_observer(self, key: str, obs: BlackboardObserver):
         self._observers[key].add(obs)
@@ -47,6 +48,20 @@ class Blackboard(MutableMapping):
                 if o is not None:
                     o(value)
 
-blackboard = Blackboard()
+# use simple dict-of-dicts namespacing for blackboards
+__blackboards = defaultdict(Blackboard)
 
-__all__ = ["blackboard", "BlackboardObserver"]
+
+def get_blackboard(namespace: str=None):
+    return __blackboards[namespace or _DEFAULT_NAMESPACE]
+
+def read(key: str, namespace: str=None):
+    return get_blackboard(namespace).get(key)
+
+def write(key: str, value: Any, namespace: str=None):
+    get_blackboard(namespace)[key] = value
+
+def clear():
+    __blackboards.clear()
+
+__all__ = ["get_blackboard", "read", "write", "clear", "Blackboard"]

@@ -1,7 +1,6 @@
 from typing import List, Type
 
-from edbt import *
-
+import edbt
 
 class TreeBuilderException(Exception):
     """Exception type to capture errors from the TreeBuilder class."""
@@ -14,6 +13,8 @@ class TreeBuilder:
 
         Simplifies the creation of complex and nested behaviour trees with
         helper functions for both common and custom nodes.
+
+        Note that the build function requires an async context to run.
 
         Examples:
             Note that the actions used below are for example purposes only and
@@ -29,31 +30,12 @@ class TreeBuilder:
             >>>                 .done()
             >>>             .leaf(CloseFridge())
             >>>         .build())
-            >>>
-            >>> watch_the_game = (
-            >>>     TreeBuilder()
-            >>>         .sequencer()
-            >>>             .leaf(SitOnCouch())
-            >>>             .blackboard_observer(
-            >>>                     key="is_thirsty",
-            >>>                     condition=IsEqual("is_thirsty", True),
-            >>>                     abort_rule=LowerPriority)
-            >>>                 .sequencer()
-            >>>                     .selector()
-            >>>                         .decorator(Inverse())
-            >>>                             .leaf(IsDrinkEmpty())
-            >>>                         .add_subtree(get_drink_from_fridge)
-            >>>                         .done()
-            >>>                     .leaf(SipDrink())
-            >>>                     .done()
-            >>>             .leaf(WatchTV())
-            >>>         .build())
         """
         self._root = None
-        self._composites: List[Composite] = []
-        self._decorator: Decorator = None
+        self._composites: List[edbt.Composite] = []
+        self._decorator: edbt.Decorator = None
 
-    def _insert(self, b: Behaviour) -> "TreeBuilder":
+    def _insert(self, b: edbt.Behaviour) -> "TreeBuilder":
         if self._root is None:
             self._root = b
         elif self._decorator:
@@ -72,7 +54,7 @@ class TreeBuilder:
         self._composites.append(c)
         return self
 
-    def add_subtree(self, subtree: BehaviourTree) -> "TreeBuilder":
+    def add_subtree(self, subtree: edbt.BehaviourTree) -> "TreeBuilder":
         self._insert(subtree.root)
         return self
 
@@ -82,7 +64,7 @@ class TreeBuilder:
         Nested Composite nodes can be closed with `done()` to resume insertion
         from the nearest composite ancestor.
         """
-        return self._composite(Selector())
+        return self._composite(edbt.Selector())
 
     def sequencer(self) -> "TreeBuilder":
         """Adds a Sequencer node to the tree.
@@ -90,7 +72,7 @@ class TreeBuilder:
         Nested Composite nodes can be closed with `done()` to resume insertion
         from the nearest composite ancestor.
         """
-        return self._composite(Sequencer())
+        return self._composite(edbt.Sequencer())
 
     def parallel(self) -> "TreeBuilder":
         """Adds a Parallel node to the tree.
@@ -98,7 +80,7 @@ class TreeBuilder:
         Nested Composite nodes can be closed with `done()` to resume insertion
         from the nearest composite ancestor.
         """
-        return self._composite(Parallel())
+        return self._composite(edbt.Parallel())
 
     def done(self) -> "TreeBuilder":
         """Closes the most recent composite node"""
@@ -108,7 +90,7 @@ class TreeBuilder:
         self._composites.pop()
         return self
 
-    def decorator(self, d: Decorator) -> "TreeBuilder":
+    def decorator(self, d: edbt.Decorator) -> "TreeBuilder":
         """Adds the given Decorator node to the tree.
 
         The next node in the tree will be added as its child.
@@ -124,11 +106,12 @@ class TreeBuilder:
         Status.SUCCESS becomes Status.FAILURE, and any other response becomes
         Status.SUCCESS. The next node in the tree will be added as its child.
         """
-        self.decorator(Inverse())
+        self.decorator(edbt.Inverse())
         return self
 
-    def blackboard_observer(self, key: str, condition: Condition,
-                            abort_rule: Type[AbortRule]=None) -> "TreeBuilder":
+    def blackboard_observer(self, key: str, condition: edbt.Condition,
+                            abort_rule: Type[edbt.AbortRule]=None,
+                            namespace: str=None) -> "TreeBuilder":
         """Adds a BOD (Blackboard Observer Decorator) node to the tree.
 
         The next node in the tree will be added as its child.
@@ -136,13 +119,14 @@ class TreeBuilder:
         if not self._composites and abort_rule:
             raise TreeBuilderException(
                 "blackboard observer has no composite ancestor")
-        return self.decorator(BOD(
+        return self.decorator(edbt.BOD(
             key=key,
+            namespace=namespace,
             condition=condition,
             abort_rule=abort_rule(self._composites[-1]),
         ))
 
-    def request_handler(self, key) -> "TreeBuilder":
+    def request_handler(self, key: str, namespace: str) -> "TreeBuilder":
         """Adds a RequestHandler node to the tree.
 
         The next node in the tree will be added as its child.
@@ -150,23 +134,30 @@ class TreeBuilder:
         if not self._composites:
             raise TreeBuilderException(
                 "request handler has no composite ancestor")
-        return self.decorator(RequestHandler(key, self._composites[-1]))
+        return self.decorator(edbt.RequestHandler(
+            key=key,
+            parent=self._composites[-1],
+            namespace=namespace
+        ))
 
-    def leaf(self, behaviour: Behaviour) -> "TreeBuilder":
+    def leaf(self, behaviour: edbt.Behaviour) -> "TreeBuilder":
         """Adds the given behaviour to the tree as a leaf node."""
         return self._insert(behaviour)
 
-    def build(self) -> BehaviourTree:
-        """Build and return the behaviour tree.
-
-        Returns:
-            BehaviourTree: the `BehaviourTree` object defined by the builder.
-        """
+    def _validate(self):
         if self._root is None:
             raise TreeBuilderException("can't build an empty tree")
         if self._decorator is not None:
             raise TreeBuilderException(
                 "build called before adding child to decorator")
-        return BehaviourTree(self._root)
+
+    def build(self) -> edbt.BehaviourTree:
+        """Build and return the behaviour tree.
+
+        Returns:
+            BehaviourTree: the `BehaviourTree` object defined by the builder.
+        """
+        self._validate()
+        return edbt.BehaviourTree(self._root)
 
 __all__ = ["TreeBuilder", "TreeBuilderException"]
