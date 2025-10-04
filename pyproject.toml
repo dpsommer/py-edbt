@@ -32,6 +32,9 @@ local_scheme = "no-local-version"
 [tool.hatch.build.targets.wheel]
 packages = ["src/edbt"]
 
+[tool.hatch.build.targets.sdist]
+include = ["src/*.py"]
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q -p no:warnings"
