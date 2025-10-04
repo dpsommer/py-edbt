@@ -33,7 +33,8 @@ local_scheme = "no-local-version"
 packages = ["src/edbt"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/*.py"]
+include = ["src/**/*.py", "/tests"]
+exclude = ["/.trunk"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
