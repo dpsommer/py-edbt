@@ -1,6 +1,6 @@
-from typing import Any, Callable
 from collections import defaultdict
 from collections.abc import MutableMapping
+from typing import Any, Callable
 
 BlackboardObserver = Callable[[Any], None]
 
@@ -48,20 +48,25 @@ class Blackboard(MutableMapping):
                 if o is not None:
                     o(value)
 
+
 # use simple dict-of-dicts namespacing for blackboards
 __blackboards = defaultdict(Blackboard)
 
 
-def get_blackboard(namespace: str=None):
+def get_blackboard(namespace: str = None):
     return __blackboards[namespace or _DEFAULT_NAMESPACE]
 
-def read(key: str, namespace: str=None):
+
+def read(key: str, namespace: str = None):
     return get_blackboard(namespace).get(key)
 
-def write(key: str, value: Any, namespace: str=None):
+
+def write(key: str, value: Any, namespace: str = None):
     get_blackboard(namespace)[key] = value
+
 
 def clear():
     __blackboards.clear()
+
 
 __all__ = ["get_blackboard", "read", "write", "clear", "Blackboard"]

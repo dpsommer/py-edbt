@@ -1,7 +1,7 @@
 import asyncio
 import time
 from dataclasses import dataclass
-from heapq import heappush, heappop
+from heapq import heappop, heappush
 from typing import Callable, List, Tuple
 
 import edbt
@@ -26,7 +26,7 @@ class MailRoom:
         self._mailbox: List[Tuple[int, Message]] = []
         self._running = True
 
-    def send_message(self, msg: Message, priority: int=None):
+    def send_message(self, msg: Message, priority: int = None):
         heappush(self._mailbox, (priority or msg.timeout, msg))
 
     def start(self):
@@ -47,7 +47,8 @@ class MailRoom:
                 if timeout > now and msg.condition():
                     k, v = msg.request
                     edbt.blackboard.write(k, v, msg.receiver)
-            except:  # when we run out of messages, sleep til next cycle
+            # when we run out of messages, sleep til next cycle
+            except IndexError:
                 await asyncio.sleep(MAIL_ROOM_CHECK_FREQUENCY)
 
 

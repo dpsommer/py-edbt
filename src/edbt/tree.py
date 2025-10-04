@@ -11,4 +11,5 @@ class BehaviourTree:
     def tick(self) -> Status:
         return self.root.tick()
 
+
 __all__ = ["BehaviourTree"]

@@ -14,17 +14,17 @@ class Condition(edbt.Behaviour):
 
 
 class HasValue(Condition):
-    def __init__(self, key: str, namespace: str=None):
+    def __init__(self, key: str, namespace: str = None):
         super().__init__()
         self._key = key
         self._namespace = namespace
 
     def __call__(self, *args, **kwargs):
-        return blackboard.read(self._key, self._namespace) != None
+        return blackboard.read(self._key, self._namespace) is not None
 
 
 class IsEqual(Condition):
-    def __init__(self, key: str, value, namespace: str=None):
+    def __init__(self, key: str, value, namespace: str = None):
         super().__init__()
         self._key = key
         self._value = value
@@ -32,5 +32,6 @@ class IsEqual(Condition):
 
     def __call__(self, *args, **kwargs):
         return blackboard.read(self._key, self._namespace) == self._value
+
 
 __all__ = ["Condition", "HasValue", "IsEqual"]

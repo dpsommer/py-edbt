@@ -1,9 +1,8 @@
+import mocks
 import pytest
 
 import edbt
 from edbt import blackboard
-
-from .mocks import *
 
 TEST_KEY = "test"
 TEST_VALUE = "test"
@@ -11,27 +10,37 @@ TEST_VALUE = "test"
 
 def setup_bod(parent, condition, abort_rule=None):
     bod = edbt.BOD(
-        child=SuccessTask(),
+        child=mocks.SuccessTask(),
         key=TEST_KEY,
         condition=condition,
         abort_rule=abort_rule,
     )
     parent.add_child(bod)
-    parent.add_child(RunningTask())
+    parent.add_child(mocks.RunningTask())
 
     return bod
 
 
 @pytest.mark.parametrize(
-        "condition,state,expected",
-        (
-            [edbt.HasValue(TEST_KEY), dict(), Status.FAILURE],
-            [edbt.HasValue(TEST_KEY), {TEST_KEY: TEST_VALUE}, Status.SUCCESS],
-            [edbt.IsEqual(TEST_KEY, TEST_VALUE), {TEST_KEY: "wrong_value"}, Status.FAILURE],
-            [edbt.IsEqual(TEST_KEY, TEST_VALUE), {TEST_KEY: TEST_VALUE}, Status.SUCCESS],
-        ),
+    "condition,state,expected",
+    (
+        [edbt.HasValue(TEST_KEY), dict(), mocks.Status.FAILURE],
+        [edbt.HasValue(TEST_KEY), {TEST_KEY: TEST_VALUE}, mocks.Status.SUCCESS],
+        [
+            edbt.IsEqual(TEST_KEY, TEST_VALUE),
+            {TEST_KEY: "wrong_value"},
+            mocks.Status.FAILURE,
+        ],
+        [
+            edbt.IsEqual(TEST_KEY, TEST_VALUE),
+            {TEST_KEY: TEST_VALUE},
+            mocks.Status.SUCCESS,
+        ],
+    ),
 )
-def test_bod_conditions(condition: Condition, state: dict, expected: Status):
+def test_bod_conditions(
+    condition: mocks.Condition, state: dict, expected: mocks.Status
+):
     parent = edbt.Selector()
     tree = edbt.BehaviourTree(parent)
     bod = setup_bod(parent, condition)
@@ -50,4 +59,4 @@ def test_lower_priority_abort_rule():
     blackboard.write(TEST_KEY, TEST_VALUE)
     tree.tick()
 
-    assert parent._children[1].state == Status.ABORTED
+    assert parent._children[1].state == mocks.Status.ABORTED

@@ -20,14 +20,17 @@ class Behaviour(ABC):
         self.state = Status.INVALID
 
     def _initialize(self) -> None:
-        pass
+        return
 
     @abstractmethod
     def _update(self) -> Status:
         pass
 
     def _terminate(self) -> None:
-        pass
+        return
 
     def abort(self) -> None:
         self.state = Status.ABORTED
+
+
+__all__ = ["Behaviour"]

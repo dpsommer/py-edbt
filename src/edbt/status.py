@@ -7,3 +7,6 @@ class Status(Enum):
     FAILURE = 1
     RUNNING = 2
     ABORTED = 3
+
+
+__all__ = ["Status"]

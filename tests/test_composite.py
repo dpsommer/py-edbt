@@ -1,18 +1,18 @@
 from typing import List, Type
+
+import mocks
 import pytest
 
 from edbt import (
-    BehaviourTree,
     Behaviour,
+    BehaviourTree,
     Composite,
     Parallel,
-    SuccessPolicy,
     Selector,
     Sequencer,
     Status,
+    SuccessPolicy,
 )
-
-from .mocks import *
 
 
 def setup_composite(cls: Type[Composite], children: List[Behaviour], *args):
@@ -26,20 +26,21 @@ def setup_composite(cls: Type[Composite], children: List[Behaviour], *args):
 
 
 @pytest.mark.parametrize(
-    "children,expected_states", [
+    "children,expected_states",
+    [
         (
-            [FailureTask(), SuccessTask()],
+            [mocks.FailureTask(), mocks.SuccessTask()],
             [Status.SUCCESS],
         ),
         (
-            [FailureTask(), RunningTask()],
+            [mocks.FailureTask(), mocks.RunningTask()],
             [Status.RUNNING],
         ),
         (
-            [FailureTask(), XThenY(Status.RUNNING, Status.SUCCESS)],
+            [mocks.FailureTask(), mocks.XThenY(Status.RUNNING, Status.SUCCESS)],
             [Status.RUNNING, Status.SUCCESS],
         ),
-    ]
+    ],
 )
 def test_selector(children, expected_states):
     tree = setup_composite(Selector, children)
@@ -49,20 +50,21 @@ def test_selector(children, expected_states):
 
 
 @pytest.mark.parametrize(
-    "children,expected_states", [
+    "children,expected_states",
+    [
         (
-            [XThenY(Status.SUCCESS, Status.FAILURE)],
+            [mocks.XThenY(Status.SUCCESS, Status.FAILURE)],
             [Status.SUCCESS, Status.FAILURE],
         ),
         (
-            [SuccessTask(), RunningTask()],
+            [mocks.SuccessTask(), mocks.RunningTask()],
             [Status.RUNNING],
         ),
         (
-            [SuccessTask(), XThenY(Status.RUNNING, Status.SUCCESS)],
+            [mocks.SuccessTask(), mocks.XThenY(Status.RUNNING, Status.SUCCESS)],
             [Status.RUNNING, Status.SUCCESS],
         ),
-    ]
+    ],
 )
 def test_sequencer(children, expected_states):
     tree = setup_composite(Sequencer, children)
@@ -72,53 +74,62 @@ def test_sequencer(children, expected_states):
 
 
 @pytest.mark.parametrize(
-    "policy,children,expected_states", [
+    "policy,children,expected_states",
+    [
         (
             SuccessPolicy.REQUIRE_ONE,
-            [FailureTask(), SuccessTask()],
+            [mocks.FailureTask(), mocks.SuccessTask()],
             [Status.SUCCESS],
         ),
         (
             SuccessPolicy.REQUIRE_ONE,
-            [FailureTask(), FailureTask()],
+            [mocks.FailureTask(), mocks.FailureTask()],
             [Status.FAILURE],
         ),
         (
             SuccessPolicy.REQUIRE_ALL,
-            [SuccessTask(), SuccessTask()],
+            [mocks.SuccessTask(), mocks.SuccessTask()],
             [Status.SUCCESS],
         ),
         (
             SuccessPolicy.REQUIRE_ALL,
-            [SuccessTask(), SuccessTask(), FailureTask()],
+            [mocks.SuccessTask(), mocks.SuccessTask(), mocks.FailureTask()],
             [Status.FAILURE],
         ),
         (
             SuccessPolicy.REQUIRE_ONE,
-            [FailureTask(), FailureTask(), RunningTask()],
+            [mocks.FailureTask(), mocks.FailureTask(), mocks.RunningTask()],
             [Status.RUNNING],
         ),
         (
             SuccessPolicy.REQUIRE_ONE,
-            [RunningTask(), SuccessTask(), FailureTask()],
+            [mocks.RunningTask(), mocks.SuccessTask(), mocks.FailureTask()],
             [Status.SUCCESS],
         ),
         (
             SuccessPolicy.REQUIRE_ALL,
-            [RunningTask(), SuccessTask(), FailureTask()],
+            [mocks.RunningTask(), mocks.SuccessTask(), mocks.FailureTask()],
             [Status.FAILURE],
         ),
         (
             SuccessPolicy.REQUIRE_ONE,
-            [FailureTask(), XThenY(Status.RUNNING, Status.SUCCESS), FailureTask()],
+            [
+                mocks.FailureTask(),
+                mocks.XThenY(Status.RUNNING, Status.SUCCESS),
+                mocks.FailureTask(),
+            ],
             [Status.RUNNING, Status.SUCCESS],
         ),
         (
             SuccessPolicy.REQUIRE_ALL,
-            [SuccessTask(), XThenY(Status.RUNNING, Status.FAILURE), SuccessTask()],
+            [
+                mocks.SuccessTask(),
+                mocks.XThenY(Status.RUNNING, Status.FAILURE),
+                mocks.SuccessTask(),
+            ],
             [Status.RUNNING, Status.FAILURE],
         ),
-    ]
+    ],
 )
 def test_parallel(policy, children, expected_states):
     tree = setup_composite(Parallel, children, policy)

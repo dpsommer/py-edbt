@@ -1,6 +1,6 @@
 from enum import Enum
 
-from edbt import BehaviourTree, Status
+from edbt import Status
 
 from .composite import Composite
 
@@ -36,8 +36,10 @@ class Parallel(Composite):
             s = child.tick()
             if s is Status.SUCCESS:
                 successes += 1
-                if (successes == need_successes or
-                        self._success_policy is SuccessPolicy.REQUIRE_ONE):
+                if (
+                    successes == need_successes
+                    or self._success_policy is SuccessPolicy.REQUIRE_ONE
+                ):
                     return s
             elif s is Status.RUNNING:
                 status = Status.RUNNING

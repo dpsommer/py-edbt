@@ -2,8 +2,10 @@ from typing import List, Type
 
 import edbt
 
+
 class TreeBuilderException(Exception):
     """Exception type to capture errors from the TreeBuilder class."""
+
     pass
 
 
@@ -45,7 +47,8 @@ class TreeBuilder:
             self._composites[-1].add_child(b)
         else:
             raise TreeBuilderException(
-                f"failed to insert behaviour {b}: no suitable parent")
+                f"failed to insert behaviour {b}: no suitable parent"
+            )
 
         return self
 
@@ -85,8 +88,7 @@ class TreeBuilder:
     def done(self) -> "TreeBuilder":
         """Closes the most recent composite node"""
         if len(self._composites) == 0:
-            raise TreeBuilderException(
-                "done() called with no composite ancestor")
+            raise TreeBuilderException("done() called with no composite ancestor")
         self._composites.pop()
         return self
 
@@ -109,22 +111,27 @@ class TreeBuilder:
         self.decorator(edbt.Inverse())
         return self
 
-    def blackboard_observer(self, key: str, condition: edbt.Condition,
-                            abort_rule: Type[edbt.AbortRule]=None,
-                            namespace: str=None) -> "TreeBuilder":
+    def blackboard_observer(
+        self,
+        key: str,
+        condition: edbt.Condition,
+        abort_rule: Type[edbt.AbortRule] = None,
+        namespace: str = None,
+    ) -> "TreeBuilder":
         """Adds a BOD (Blackboard Observer Decorator) node to the tree.
 
         The next node in the tree will be added as its child.
         """
         if not self._composites and abort_rule:
-            raise TreeBuilderException(
-                "blackboard observer has no composite ancestor")
-        return self.decorator(edbt.BOD(
-            key=key,
-            namespace=namespace,
-            condition=condition,
-            abort_rule=abort_rule(self._composites[-1]),
-        ))
+            raise TreeBuilderException("blackboard observer has no composite ancestor")
+        return self.decorator(
+            edbt.BOD(
+                key=key,
+                namespace=namespace,
+                condition=condition,
+                abort_rule=abort_rule(self._composites[-1]),
+            )
+        )
 
     def request_handler(self, key: str, namespace: str) -> "TreeBuilder":
         """Adds a RequestHandler node to the tree.
@@ -132,13 +139,12 @@ class TreeBuilder:
         The next node in the tree will be added as its child.
         """
         if not self._composites:
-            raise TreeBuilderException(
-                "request handler has no composite ancestor")
-        return self.decorator(edbt.RequestHandler(
-            key=key,
-            parent=self._composites[-1],
-            namespace=namespace
-        ))
+            raise TreeBuilderException("request handler has no composite ancestor")
+        return self.decorator(
+            edbt.RequestHandler(
+                key=key, parent=self._composites[-1], namespace=namespace
+            )
+        )
 
     def leaf(self, behaviour: edbt.Behaviour) -> "TreeBuilder":
         """Adds the given behaviour to the tree as a leaf node."""
@@ -148,8 +154,7 @@ class TreeBuilder:
         if self._root is None:
             raise TreeBuilderException("can't build an empty tree")
         if self._decorator is not None:
-            raise TreeBuilderException(
-                "build called before adding child to decorator")
+            raise TreeBuilderException("build called before adding child to decorator")
 
     def build(self) -> edbt.BehaviourTree:
         """Build and return the behaviour tree.
@@ -159,5 +164,6 @@ class TreeBuilder:
         """
         self._validate()
         return edbt.BehaviourTree(self._root)
+
 
 __all__ = ["TreeBuilder", "TreeBuilderException"]

@@ -1,15 +1,21 @@
 import edbt
 from edbt import blackboard
 
+from ..conditions import Condition
 from .abortrules import AbortRule
 from .decorator import Decorator
-from ..conditions import Condition
 
 
 class BOD(Decorator):
 
-    def __init__(self, key: str, condition: Condition, namespace: str=None,
-                 child: edbt.Behaviour=None, abort_rule: AbortRule=None):
+    def __init__(
+        self,
+        key: str,
+        condition: Condition,
+        namespace: str = None,
+        child: edbt.Behaviour = None,
+        abort_rule: AbortRule = None,
+    ):
         super().__init__(child)
         self._blackboard = blackboard.get_blackboard(namespace)
         self._key = key
