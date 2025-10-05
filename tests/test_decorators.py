@@ -1,15 +1,18 @@
-import mocks
 import pytest
 
-import edbt
-from edbt import blackboard
+from edbt import BehaviourTree, blackboard
+from edbt.composite import Selector
+from edbt.conditions import HasValue, IsEqual
+from edbt.decorators import BOD, LowerPriority
+
+from . import mocks
 
 TEST_KEY = "test"
 TEST_VALUE = "test"
 
 
 def setup_bod(parent, condition, abort_rule=None):
-    bod = edbt.BOD(
+    bod = BOD(
         child=mocks.SuccessTask(),
         key=TEST_KEY,
         condition=condition,
@@ -24,15 +27,15 @@ def setup_bod(parent, condition, abort_rule=None):
 @pytest.mark.parametrize(
     "condition,state,expected",
     (
-        [edbt.HasValue(TEST_KEY), dict(), mocks.Status.FAILURE],
-        [edbt.HasValue(TEST_KEY), {TEST_KEY: TEST_VALUE}, mocks.Status.SUCCESS],
+        [HasValue(TEST_KEY), dict(), mocks.Status.FAILURE],
+        [HasValue(TEST_KEY), {TEST_KEY: TEST_VALUE}, mocks.Status.SUCCESS],
         [
-            edbt.IsEqual(TEST_KEY, TEST_VALUE),
+            IsEqual(TEST_KEY, TEST_VALUE),
             {TEST_KEY: "wrong_value"},
             mocks.Status.FAILURE,
         ],
         [
-            edbt.IsEqual(TEST_KEY, TEST_VALUE),
+            IsEqual(TEST_KEY, TEST_VALUE),
             {TEST_KEY: TEST_VALUE},
             mocks.Status.SUCCESS,
         ],
@@ -41,8 +44,8 @@ def setup_bod(parent, condition, abort_rule=None):
 def test_bod_conditions(
     condition: mocks.Condition, state: dict, expected: mocks.Status
 ):
-    parent = edbt.Selector()
-    tree = edbt.BehaviourTree(parent)
+    parent = Selector()
+    tree = BehaviourTree(parent)
     bod = setup_bod(parent, condition)
     for k, v in state.items():
         blackboard.write(k, v)
@@ -52,9 +55,9 @@ def test_bod_conditions(
 
 
 def test_lower_priority_abort_rule():
-    parent = edbt.Selector()
-    tree = edbt.BehaviourTree(parent)
-    setup_bod(parent, edbt.HasValue(TEST_KEY), edbt.LowerPriority(parent))
+    parent = Selector()
+    tree = BehaviourTree(parent)
+    setup_bod(parent, HasValue(TEST_KEY), LowerPriority(parent))
     tree.tick()  # initialize the bod and its observer
     blackboard.write(TEST_KEY, TEST_VALUE)
     tree.tick()

@@ -1,9 +1,12 @@
 # trunk-ignore-all(black)
-import mocks
 import pytest
 
-import edbt
-from edbt import blackboard, builder
+from edbt import blackboard
+from edbt.builder import TreeBuilder, TreeBuilderException
+from edbt.conditions import HasValue, IsEqual
+from edbt.decorators import LowerPriority
+
+from . import mocks
 
 TEST_KEY = "test"
 TEST_VALUE = "test"
@@ -11,7 +14,7 @@ TEST_VALUE = "test"
 
 def test_builder():
     tree = (
-        builder.TreeBuilder()
+        TreeBuilder()
             .selector()
                 .request_handler(TEST_KEY)
                     .leaf(mocks.SuccessTask())
@@ -23,7 +26,7 @@ def test_builder():
 
 def test_nested_composites():
     tree = (
-        builder.TreeBuilder()
+        TreeBuilder()
             .selector()
                 .leaf(mocks.FailureTask())
                 .sequencer()
@@ -38,12 +41,12 @@ def test_nested_composites():
 
 def test_composite_decorator_child():
     tree = (
-        builder.TreeBuilder()
+        TreeBuilder()
             .selector()
                 .request_handler(TEST_KEY)
                     .selector()
                         .leaf(mocks.FailureTask())
-                        .leaf(edbt.HasValue(TEST_KEY))
+                        .leaf(HasValue(TEST_KEY))
                         .done()
                     .leaf(mocks.RunningTask())
             .build()
@@ -54,9 +57,9 @@ def test_composite_decorator_child():
 
 
 def test_failed_insert():
-    with pytest.raises(builder.TreeBuilderException):
+    with pytest.raises(TreeBuilderException):
         (
-            builder.TreeBuilder()
+            TreeBuilder()
                 .selector()
                     .leaf(mocks.FailureTask())
                     .leaf(mocks.SuccessTask())
@@ -67,9 +70,9 @@ def test_failed_insert():
 
 
 def test_done_without_composite():
-    with pytest.raises(builder.TreeBuilderException):
+    with pytest.raises(TreeBuilderException):
         (
-            builder.TreeBuilder()
+            TreeBuilder()
                 .selector()
                     .leaf(mocks.FailureTask())
                     .leaf(mocks.SuccessTask())
@@ -80,13 +83,13 @@ def test_done_without_composite():
 
 
 def test_bod_without_composite():
-    with pytest.raises(builder.TreeBuilderException):
+    with pytest.raises(TreeBuilderException):
         (
-            builder.TreeBuilder()
+            TreeBuilder()
                 .blackboard_observer(
                     key=TEST_KEY,
-                    condition=edbt.IsEqual(TEST_KEY, TEST_VALUE),
-                    abort_rule=edbt.LowerPriority,
+                    condition=IsEqual(TEST_KEY, TEST_VALUE),
+                    abort_rule=LowerPriority,
                 )
                     .leaf(mocks.SuccessTask())
                 .build()
@@ -94,9 +97,9 @@ def test_bod_without_composite():
 
 
 def test_request_handler_without_composite():
-    with pytest.raises(builder.TreeBuilderException):
+    with pytest.raises(TreeBuilderException):
         (
-            builder.TreeBuilder()
+            TreeBuilder()
                 .request_handler(TEST_KEY)
                     .leaf(mocks.SuccessTask())
                 .build()
@@ -104,9 +107,9 @@ def test_request_handler_without_composite():
 
 
 def test_empty_decorator_raises():
-    with pytest.raises(builder.TreeBuilderException):
+    with pytest.raises(TreeBuilderException):
         (
-            builder.TreeBuilder()
+            TreeBuilder()
                 .selector()
                     .leaf(mocks.FailureTask())
                 .request_handler(TEST_KEY)

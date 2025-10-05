@@ -72,10 +72,9 @@ class SipDrink(edbt.Behaviour):
         try:
             held_object.take_sip()
             blackboard.write(
-                common.IS_THIRSTY_KEY,
-                False,
-                common.IS_THIRSTY_KEY,
-                common.AGENT_NAMESPACE,
+                key=common.IS_THIRSTY_KEY,
+                value=False,
+                namespace=common.AGENT_NAMESPACE,
             )
             return edbt.Status.SUCCESS
         except ValueError:
@@ -95,9 +94,8 @@ class WatchTV(edbt.Behaviour):
         print("watching TV for", self._time_spent)
         if self._time_spent % 3 == 0:
             blackboard.write(
-                common.IS_THIRSTY_KEY,
-                True,
-                common.IS_THIRSTY_KEY,
-                common.AGENT_NAMESPACE,
+                key=common.IS_THIRSTY_KEY,
+                value=True,
+                namespace=common.AGENT_NAMESPACE,
             )
         return self.state

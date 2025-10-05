@@ -1,12 +1,13 @@
 from typing import List, Type
 
-import edbt
+from edbt import Behaviour, BehaviourTree
+from edbt.composite import Composite, Parallel, Selector, Sequencer
+from edbt.conditions import Condition
+from edbt.decorators import BOD, AbortRule, Decorator, Inverse, RequestHandler
 
 
 class TreeBuilderException(Exception):
     """Exception type to capture errors from the TreeBuilder class."""
-
-    pass
 
 
 class TreeBuilder:
@@ -34,10 +35,10 @@ class TreeBuilder:
             >>>         .build())
         """
         self._root = None
-        self._composites: List[edbt.Composite] = []
-        self._decorator: edbt.Decorator = None
+        self._composites: List[Composite] = []
+        self._decorator: Decorator = None
 
-    def _insert(self, b: edbt.Behaviour) -> "TreeBuilder":
+    def _insert(self, b: Behaviour) -> "TreeBuilder":
         if self._root is None:
             self._root = b
         elif self._decorator:
@@ -57,7 +58,7 @@ class TreeBuilder:
         self._composites.append(c)
         return self
 
-    def add_subtree(self, subtree: edbt.BehaviourTree) -> "TreeBuilder":
+    def add_subtree(self, subtree: BehaviourTree) -> "TreeBuilder":
         self._insert(subtree.root)
         return self
 
@@ -67,7 +68,7 @@ class TreeBuilder:
         Nested Composite nodes can be closed with `done()` to resume insertion
         from the nearest composite ancestor.
         """
-        return self._composite(edbt.Selector())
+        return self._composite(Selector())
 
     def sequencer(self) -> "TreeBuilder":
         """Adds a Sequencer node to the tree.
@@ -75,7 +76,7 @@ class TreeBuilder:
         Nested Composite nodes can be closed with `done()` to resume insertion
         from the nearest composite ancestor.
         """
-        return self._composite(edbt.Sequencer())
+        return self._composite(Sequencer())
 
     def parallel(self) -> "TreeBuilder":
         """Adds a Parallel node to the tree.
@@ -83,7 +84,7 @@ class TreeBuilder:
         Nested Composite nodes can be closed with `done()` to resume insertion
         from the nearest composite ancestor.
         """
-        return self._composite(edbt.Parallel())
+        return self._composite(Parallel())
 
     def done(self) -> "TreeBuilder":
         """Closes the most recent composite node"""
@@ -92,7 +93,7 @@ class TreeBuilder:
         self._composites.pop()
         return self
 
-    def decorator(self, d: edbt.Decorator) -> "TreeBuilder":
+    def decorator(self, d: Decorator) -> "TreeBuilder":
         """Adds the given Decorator node to the tree.
 
         The next node in the tree will be added as its child.
@@ -108,14 +109,14 @@ class TreeBuilder:
         Status.SUCCESS becomes Status.FAILURE, and any other response becomes
         Status.SUCCESS. The next node in the tree will be added as its child.
         """
-        self.decorator(edbt.Inverse())
+        self.decorator(Inverse())
         return self
 
     def blackboard_observer(
         self,
         key: str,
-        condition: edbt.Condition,
-        abort_rule: Type[edbt.AbortRule] = None,
+        condition: Condition,
+        abort_rule: Type[AbortRule] = None,
         namespace: str = None,
     ) -> "TreeBuilder":
         """Adds a BOD (Blackboard Observer Decorator) node to the tree.
@@ -125,7 +126,7 @@ class TreeBuilder:
         if not self._composites and abort_rule:
             raise TreeBuilderException("blackboard observer has no composite ancestor")
         return self.decorator(
-            edbt.BOD(
+            BOD(
                 key=key,
                 namespace=namespace,
                 condition=condition,
@@ -133,7 +134,7 @@ class TreeBuilder:
             )
         )
 
-    def request_handler(self, key: str, namespace: str) -> "TreeBuilder":
+    def request_handler(self, key: str, namespace: str = None) -> "TreeBuilder":
         """Adds a RequestHandler node to the tree.
 
         The next node in the tree will be added as its child.
@@ -141,12 +142,10 @@ class TreeBuilder:
         if not self._composites:
             raise TreeBuilderException("request handler has no composite ancestor")
         return self.decorator(
-            edbt.RequestHandler(
-                key=key, parent=self._composites[-1], namespace=namespace
-            )
+            RequestHandler(key=key, parent=self._composites[-1], namespace=namespace)
         )
 
-    def leaf(self, behaviour: edbt.Behaviour) -> "TreeBuilder":
+    def leaf(self, behaviour: Behaviour) -> "TreeBuilder":
         """Adds the given behaviour to the tree as a leaf node."""
         return self._insert(behaviour)
 
@@ -156,14 +155,14 @@ class TreeBuilder:
         if self._decorator is not None:
             raise TreeBuilderException("build called before adding child to decorator")
 
-    def build(self) -> edbt.BehaviourTree:
+    def build(self) -> BehaviourTree:
         """Build and return the behaviour tree.
 
         Returns:
             BehaviourTree: the `BehaviourTree` object defined by the builder.
         """
         self._validate()
-        return edbt.BehaviourTree(self._root)
+        return BehaviourTree(self._root)
 
 
 __all__ = ["TreeBuilder", "TreeBuilderException"]

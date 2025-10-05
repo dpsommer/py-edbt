@@ -1,18 +1,17 @@
 from typing import List, Type
 
-import mocks
 import pytest
 
-from edbt import (
-    Behaviour,
-    BehaviourTree,
+from edbt import Behaviour, BehaviourTree, Status
+from edbt.composite import (
     Composite,
     Parallel,
     Selector,
     Sequencer,
-    Status,
     SuccessPolicy,
 )
+
+from . import mocks
 
 
 def setup_composite(cls: Type[Composite], children: List[Behaviour], *args):

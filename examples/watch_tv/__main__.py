@@ -7,6 +7,8 @@ import conditions
 
 import edbt
 from edbt.builder import TreeBuilder
+from edbt.conditions import IsEqual
+from edbt.decorators import LowerPriority
 
 
 async def main():
@@ -38,8 +40,8 @@ async def main():
                 .blackboard_observer(
                     key=common.IS_THIRSTY_KEY,
                     namespace=common.AGENT_NAMESPACE,
-                    condition=edbt.IsEqual(common.IS_THIRSTY_KEY, True, common.AGENT_NAMESPACE),
-                    abort_rule=edbt.LowerPriority,
+                    condition=IsEqual(common.IS_THIRSTY_KEY, True, common.AGENT_NAMESPACE),
+                    abort_rule=LowerPriority,
                 )
                     .sequencer()
                         .selector()
