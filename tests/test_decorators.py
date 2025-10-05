@@ -1,9 +1,8 @@
 import pytest
 
 from edbt import BehaviourTree, blackboard
-from edbt.composite import Selector
-from edbt.conditions import HasValue, IsEqual
-from edbt.decorators import BOD, LowerPriority
+from edbt.nodes import BOD, Selector
+from edbt.rules import HasValue, IsEqual, LowerPriority
 
 from . import mocks
 

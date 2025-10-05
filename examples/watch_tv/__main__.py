@@ -7,8 +7,7 @@ import conditions
 
 import edbt
 from edbt.builder import TreeBuilder
-from edbt.conditions import IsEqual
-from edbt.decorators import LowerPriority
+from edbt.rules import IsEqual, LowerPriority
 
 
 async def main():

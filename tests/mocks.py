@@ -1,5 +1,5 @@
 from edbt import Behaviour, Status
-from edbt.conditions import Condition
+from edbt.rules import Condition
 
 
 class StateTask(Behaviour):

@@ -4,9 +4,8 @@ import time
 import pytest
 
 from edbt import BehaviourTree, Status
-from edbt.composite import Selector
-from edbt.decorators import RequestHandler
-from edbt.services import Message, mail_room
+from edbt.mailroom import Message, mail_room
+from edbt.nodes import RequestHandler, Selector
 
 from .mocks import AlwaysTrue, RunningTask, SuccessTask
 

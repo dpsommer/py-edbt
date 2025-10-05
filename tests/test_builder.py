@@ -3,8 +3,7 @@ import pytest
 
 from edbt import blackboard
 from edbt.builder import TreeBuilder, TreeBuilderException
-from edbt.conditions import HasValue, IsEqual
-from edbt.decorators import LowerPriority
+from edbt.rules import HasValue, IsEqual, LowerPriority
 
 from . import mocks
 

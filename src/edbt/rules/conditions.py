@@ -1,16 +1,15 @@
 from abc import abstractmethod
 
-import edbt
-from edbt import blackboard
+from edbt import Behaviour, Status, blackboard
 
 
-class Condition(edbt.Behaviour):
+class Condition(Behaviour):
     @abstractmethod
     def __call__(self, *args, **kwargs):
         pass
 
     def _update(self):
-        return edbt.Status.SUCCESS if self() else edbt.Status.FAILURE
+        return Status.SUCCESS if self() else Status.FAILURE
 
 
 class HasValue(Condition):

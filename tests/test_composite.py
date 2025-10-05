@@ -3,7 +3,7 @@ from typing import List, Type
 import pytest
 
 from edbt import Behaviour, BehaviourTree, Status
-from edbt.composite import (
+from edbt.nodes.composite import (
     Composite,
     Parallel,
     Selector,

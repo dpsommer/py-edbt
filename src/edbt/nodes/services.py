@@ -1,13 +1,11 @@
 import asyncio
 from abc import abstractmethod
 
-import edbt
-
-background_tasks = set()
+from edbt import Behaviour, Status, background_tasks
 
 
-class Service(edbt.Behaviour):
-    def __init__(self, child: edbt.Behaviour, frequency: float):
+class Service(Behaviour):
+    def __init__(self, child: Behaviour, frequency: float):
         super().__init__()
         self.child = child
         self._active = True
@@ -37,7 +35,7 @@ class Service(edbt.Behaviour):
         pass
 
     def _initialize(self):
-        self.state = edbt.Status.RUNNING
+        self.state = Status.RUNNING
         if not self._running:
             # run the service as a background coroutine
             task = asyncio.create_task(self.service())
@@ -57,3 +55,6 @@ class Service(edbt.Behaviour):
         super().abort()
         self._terminate()
         self.child.abort()
+
+
+__all__ = ["Service"]

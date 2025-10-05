@@ -1,9 +1,17 @@
 from typing import List, Type
 
 from edbt import Behaviour, BehaviourTree
-from edbt.composite import Composite, Parallel, Selector, Sequencer
-from edbt.conditions import Condition
-from edbt.decorators import BOD, AbortRule, Decorator, Inverse, RequestHandler
+from edbt.nodes import (
+    BOD,
+    Composite,
+    Decorator,
+    Inverse,
+    Parallel,
+    RequestHandler,
+    Selector,
+    Sequencer,
+)
+from edbt.rules import AbortRule, Condition
 
 
 class TreeBuilderException(Exception):

@@ -4,9 +4,7 @@ from dataclasses import dataclass
 from heapq import heappop, heappush
 from typing import Callable, List, Tuple
 
-import edbt
-
-from .service import background_tasks
+from edbt import background_tasks, blackboard
 
 MAIL_ROOM_CHECK_FREQUENCY = 0.1
 
@@ -42,11 +40,12 @@ class MailRoom:
     async def _run(self):
         while self._running:
             try:
+                # FIXME: mail sent with priority isn't read
                 timeout, msg = heappop(self._mailbox)
                 now = time.time_ns()
                 if timeout > now and msg.condition():
                     k, v = msg.request
-                    edbt.blackboard.write(k, v, msg.receiver)
+                    blackboard.write(k, v, msg.receiver)
             # when we run out of messages, sleep til next cycle
             except IndexError:
                 await asyncio.sleep(MAIL_ROOM_CHECK_FREQUENCY)
@@ -54,4 +53,4 @@ class MailRoom:
 
 mail_room = MailRoom()
 
-__all__ = ["background_tasks", "Message", "mail_room"]
+__all__ = ["Message", "mail_room"]

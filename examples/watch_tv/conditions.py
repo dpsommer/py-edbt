@@ -1,7 +1,7 @@
 import common
 
 from edbt import blackboard
-from edbt.conditions import Condition
+from edbt.rules import Condition
 
 
 class IsOnCouch(Condition):
