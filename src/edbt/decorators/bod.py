@@ -7,6 +7,23 @@ from .decorator import Decorator
 
 
 class BOD(Decorator):
+    """Blackboard Observer Decorator node
+
+    Adds a dynamic observer to a blackboard key in a given namespace.
+
+    When ticked, checks the defined Condition. If it is satisfied, ticks
+    the child node. Reevaluates the abort condition when the observed key
+    is modified.
+
+    Args:
+        key (str): blackboard key to observe
+        condition (Condition): boolean Condition evaluated on tick
+        namespace (str, optional): blackboard namespace. Defaults to None,
+            which will write to the global default blackboard.
+        child (edbt.Behaviour, optional): child node. Defaults to None.
+        abort_rule (AbortRule, optional): conditional rule which aborts
+            child execution if met. Defaults to None.
+    """
 
     def __init__(
         self,

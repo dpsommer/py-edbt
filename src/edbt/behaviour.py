@@ -6,6 +6,10 @@ from .status import Status
 class Behaviour(ABC):
 
     def __init__(self):
+        """Base Behaviour class
+
+        All branch and leaf nodes extend from this abstract superclass.
+        """
         self.state = Status.INVALID
 
     def tick(self) -> Status:
@@ -20,6 +24,8 @@ class Behaviour(ABC):
         self.state = Status.INVALID
 
     def _initialize(self) -> None:
+        # the linter complains about empty non-abstract
+        # function here if this is pass, so just return
         return
 
     @abstractmethod
