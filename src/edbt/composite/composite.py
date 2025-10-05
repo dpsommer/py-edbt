@@ -15,12 +15,12 @@ class Composite(Behaviour):
     @property
     def children(self):
         # return a copy of the list to avoid mutation
-        # except through the dedicated methods
+        # except through internal methods
         return list(self._children)
 
     def reset(self):
         super().reset()
-        for child in self.children:
+        for child in self._children:
             child.reset()
 
     def _initialize(self):
@@ -41,7 +41,6 @@ class Ordered(Composite):
 
     def __init__(self):
         super().__init__()
-        self._children_iter: List[Behaviour] = None
         self._idx = 0
 
     def _initialize(self):
@@ -49,18 +48,30 @@ class Ordered(Composite):
         if len(self._children) > 0:
             self._reset_iter()
 
-    def _reset_iter(self):
-        self._idx = 0
-        self._children_iter = list(self.children)
-
     def abort(self):
         super().abort()
         for child in self._children:
             if child.state == Status.RUNNING:
                 child.abort()
         # move the index so we exit the update loop after abort is called
-        self._idx = len(self._children_iter)
+        self._idx = len(self._children)
 
     def reset(self):
         super().reset()
         self._reset_iter()
+
+    def has_next_child(self):
+        return self._idx < len(self._children)
+
+    def _reset_iter(self):
+        self._idx = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if not self.has_next_child():
+            raise StopIteration()
+        next_child = self._children[self._idx]
+        self._idx += 1
+        return next_child
