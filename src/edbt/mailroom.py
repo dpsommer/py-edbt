@@ -16,16 +16,22 @@ class Message:
     receiver: str
     request: Tuple[str, tuple]
     condition: Callable[[], bool]
-    timeout: int
+    expiry: int
 
 
 class MailRoom:
+    """Global controller for messages sent between agents
+
+    Messages are pushed to a minheap priority queue based on their defined
+    expiry time. Each cycle, messages are popped from the
+    """
+
     def __init__(self):
         self._mailbox: List[Tuple[int, Message]] = []
         self._running = True
 
-    def send_message(self, msg: Message, priority: int = None):
-        heappush(self._mailbox, (priority or msg.timeout, msg))
+    def send_message(self, msg: Message):
+        heappush(self._mailbox, (msg.expiry, msg))
 
     def start(self):
         task = asyncio.create_task(self._run())
@@ -39,18 +45,32 @@ class MailRoom:
 
     async def _run(self):
         while self._running:
-            try:
-                # FIXME: mail sent with priority isn't read
-                timeout, msg = heappop(self._mailbox)
-                now = time.time_ns()
-                if timeout > now and msg.condition():
-                    k, v = msg.request
-                    blackboard.write(k, v, msg.receiver)
-            # when we run out of messages, sleep til next cycle
-            except IndexError:
-                await asyncio.sleep(MAIL_ROOM_CHECK_FREQUENCY)
+            pending_messages = self._check_mail()
+            # when we run out of messages, push any pending messages back into
+            # the queue and sleep until the next cycle
+            for msg in pending_messages:
+                self.send_message(msg)
+            await asyncio.sleep(MAIL_ROOM_CHECK_FREQUENCY)
+
+    def _check_mail(self) -> List[Message]:
+        pending_messages = []
+        while self._mailbox:
+            expiry, msg = heappop(self._mailbox)
+            is_expired = expiry <= time.time_ns()
+
+            if is_expired:
+                continue
+
+            # we still want to evaluate messages that don't meet the defined
+            # condition, so keep them to be pushed back into the queue
+            if not msg.condition():
+                pending_messages.append(msg)
+            else:
+                k, v = msg.request
+                blackboard.write(k, v, msg.receiver)
+        return pending_messages
 
 
 mail_room = MailRoom()
 
-__all__ = ["Message", "mail_room"]
+__all__ = ["Message", "MAIL_ROOM_CHECK_FREQUENCY", "mail_room"]
