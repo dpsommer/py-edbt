@@ -5,6 +5,17 @@ from edbt import Behaviour, Status, background_tasks
 
 
 class Service(Behaviour):
+    """Passthrough node type that runs a background task
+
+    Runs an asynchronous task periodically as long as the service is
+    active. Ticks and reports back the status of its child on tick.
+
+    Args:
+        child (Behaviour): descendant in the tree whose value will be
+            returned when this node is ticked.
+        frequency (float): how often to run the task
+    """
+
     def __init__(self, child: Behaviour, frequency: float):
         super().__init__()
         self.child = child

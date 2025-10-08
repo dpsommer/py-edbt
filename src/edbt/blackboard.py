@@ -8,6 +8,11 @@ _DEFAULT_NAMESPACE = "default"
 
 
 class Blackboard(MutableMapping):
+    """Key-value store for scoped state variables
+
+    The default namespaced Blackboard contains global state, and each actor
+    generates a unique identifier to use as a namespace key for internal state.
+    """
 
     def __init__(self, **kwargs):
         self._values = dict()

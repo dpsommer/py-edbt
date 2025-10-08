@@ -5,6 +5,11 @@ from edbt import Behaviour, Status
 
 
 class Composite(Behaviour):
+    """Superclass for all composite nodes
+
+    Composite nodes can have multiple descendants in the tree, and return a
+    status based on the aggregate statuses of their children.
+    """
 
     def __init__(self):
         super().__init__()
@@ -36,6 +41,7 @@ class Composite(Behaviour):
 
 
 class Ordered(Composite):
+    """Superclass for composite nodes with sequential execution"""
 
     def __init__(self):
         super().__init__()
@@ -76,9 +82,16 @@ class Ordered(Composite):
 
 
 class Selector(Ordered):
+    """Runs children in sequence, succeeding if any child succeeds
+
+    Returns the status of its last child if none are successful.
+
+    Waits for each child to complete before moving onto the next, returning
+    a RUNNING status if the child is processing.
+    """
 
     def _update(self) -> Status:
-        status = None
+        status = Status.INVALID
 
         while self.has_next_child():
             status = next(self).tick()
@@ -90,10 +103,17 @@ class Selector(Ordered):
 
         # return the status of the last failing child
         # or INVALID if there are no children
-        return status or Status.INVALID
+        return status
 
 
 class Sequencer(Ordered):
+    """Runs children in sequence, succeeding if all children succeed
+
+    Otherwise returns the first non-SUCCESS status.
+
+    Waits for each child to complete before moving onto the next, returning
+    a RUNNING status if the child is processing.
+    """
 
     def _update(self) -> Status:
         while self.has_next_child():
@@ -114,6 +134,22 @@ class SuccessPolicy(Enum):
 
 
 class Parallel(Composite):
+    """Runs children in parallel, succeeding based on success policy
+
+    Returns a status based on the given `SuccessPolicy`. With REQUIRE_ONE,
+    SUCCESS is returned once the first child returns SUCCESS. If no
+    children succeed, returns FAILURE.
+
+    With REQUIRE_ALL, SUCCESS is only returned if all children succeed.
+    Returns FAILURE as soon as any child fails.
+
+    Returns RUNNING if the status is indeterminate and any children are
+    still running.
+
+    Args:
+        policy (SuccessPolicy): policy to determine when this node returns
+            a SUCCESS status. One of REQUIRE_ONE or REQUIRE_ALL.
+    """
 
     def __init__(self, policy: SuccessPolicy):
         super().__init__()

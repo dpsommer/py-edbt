@@ -19,29 +19,30 @@ class TreeBuilderException(Exception):
 
 
 class TreeBuilder:
+    """Builder for `BehaviourTree` objects.
+
+    Simplifies the creation of complex and nested behaviour trees with
+    helper functions for both common and custom nodes.
+
+    Note that the build function requires an async context to run.
+
+    Examples:
+        Note that the actions used below are for example purposes only and
+        are not part of the library.
+
+        >>> get_drink_from_fridge = (
+        >>>     TreeBuilder()
+        >>>         .sequencer()
+        >>>             .leaf(OpenFridge())
+        >>>             .selector()
+        >>>                 .leaf(GrabDrink())
+        >>>                 .leaf(CloseFridge())
+        >>>                 .done()
+        >>>             .leaf(CloseFridge())
+        >>>         .build())
+    """
+
     def __init__(self):
-        """Builder for `BehaviourTree` objects.
-
-        Simplifies the creation of complex and nested behaviour trees with
-        helper functions for both common and custom nodes.
-
-        Note that the build function requires an async context to run.
-
-        Examples:
-            Note that the actions used below are for example purposes only and
-            are not part of the library.
-
-            >>> get_drink_from_fridge = (
-            >>>     TreeBuilder()
-            >>>         .sequencer()
-            >>>             .leaf(OpenFridge())
-            >>>             .selector()
-            >>>                 .leaf(GrabDrink())
-            >>>                 .leaf(CloseFridge())
-            >>>                 .done()
-            >>>             .leaf(CloseFridge())
-            >>>         .build())
-        """
         self._root = None
         self._composites: List[Composite] = []
         self._decorator: Decorator = None
