@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from edbt import Behaviour, Status
+from edbt.nodes.composite import Composite
 
 
 class AbortRule(ABC):
@@ -15,7 +16,7 @@ class AbortRule(ABC):
 
 
 class LowerPriority(AbortRule):
-    parent: Behaviour
+    parent: Composite
 
     def __call__(self, b: Behaviour):
         found = False
