@@ -1,9 +1,7 @@
 # trunk-ignore-all(ruff)
 from types import ModuleType
 
-# NOTE: import order matters here!
 from .blackboard import *
-from .const import *
 from .tree import *
 from .version import *
 
