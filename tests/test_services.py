@@ -4,7 +4,7 @@ import time
 import pytest
 
 from edbt import BehaviourTree, Status
-from edbt.mailroom import Message, mail_room
+from edbt.mailroom import MAIL_ROOM_CHECK_FREQUENCY, Message, mail_room
 from edbt.nodes import RequestHandler, Selector
 
 from .mocks import AlwaysTrue, RunningTask, SuccessTask
@@ -43,10 +43,10 @@ async def test_check_mailbox(rh_selector: Selector):
             receiver=_NAMESPACE,
             request=(_TEST_KEY, ()),
             condition=AlwaysTrue,
-            timeout=time.time_ns() + (2 * 1_000_000_000),
+            expiry=time.time_ns() + (2 * 1_000_000_000),
         )
     )
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(MAIL_ROOM_CHECK_FREQUENCY + 0.1)
 
     tree.tick()
 
