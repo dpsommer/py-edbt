@@ -1,9 +1,28 @@
 from abc import ABC, abstractmethod
+from enum import Enum
+from uuid import UUID, uuid4
 
-from .const import Status
-
-"""Set to hold references to background async tasks"""
+"""Set to hold references to background async tasks to avoid them being GC'd"""
 background_tasks = set()
+
+
+class Status(Enum):
+    """Enumeration of possible behaviour statuses
+
+    SUCCESS, FAILURE, and RUNNING are propagated from leaf behaviour nodes to
+    describe their state. These states inform the behaviour and response state
+    of conditional or composite nodes above them in the tree.
+
+    The INVALID status is used to represent error states, typically with
+    misconfigured trees. The ABORTED status is applied by a dynamic observer
+    node's AbortRule to halt the current behaviour.
+    """
+
+    INVALID = -1
+    SUCCESS = 0
+    FAILURE = 1
+    RUNNING = 2
+    ABORTED = 3
 
 
 class Behaviour(ABC):
@@ -13,6 +32,7 @@ class Behaviour(ABC):
     """
 
     def __init__(self):
+        self._id: UUID = uuid4()
         self.state = Status.INVALID
 
     def tick(self) -> Status:
@@ -54,9 +74,17 @@ class BehaviourTree:
     """
 
     def __init__(self, root: Behaviour):
+        self._id: UUID = uuid4()
         self.root = root
 
     def tick(self) -> Status:
+        """Behaviour tree entrypoint
+
+        Ticks the root node, walking the tree until a leaf node is reached.
+
+        Returns:
+            Status: the status propagated from the selected behaviour.
+        """
         return self.root.tick()
 
 
@@ -64,4 +92,5 @@ __all__ = [
     "background_tasks",
     "Behaviour",
     "BehaviourTree",
+    "Status",
 ]
